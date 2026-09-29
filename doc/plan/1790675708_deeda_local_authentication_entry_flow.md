@@ -1,8 +1,7 @@
 # Deeda Local Authentication And Entry Flow Plan
 
 - Plan timestamp: `1790675708`.
-- Status: Execution complete on `feat/deeda-local-authentication`; rendezvous and
-  documentation sync have not started.
+- Status: Rendezvous and Sync Docs complete on `main`.
 - Basis:
   - Approved study: `doc/study/1790674972_deeda_local_authentication_entry_flow.md`.
   - User approval of the browser-local architecture and all five product
@@ -275,20 +274,20 @@ pre-existing worktree changes recorded below.
 
 ### 7. Documentation Sync And Acceptance
 
-- [ ] After rendezvous, update `doc/canonical/litechat-midterm-mvp-decisions.md`
+- [x] After rendezvous, update `doc/canonical/litechat-midterm-mvp-decisions.md`
   to record the approved local-account scope and explicitly retain the limits:
   browser-local only, no server access control, no OAuth, no email verification,
   and no recovery. Supersede the prior no-account decision without removing the
   proxy security constraints.
-- [ ] Update README and `doc/wiki/` setup/runtime/feature documentation to
+- [x] Update README and `doc/wiki/` setup/runtime/feature documentation to
   describe account creation, local password verifiers, session duration,
   account-scoped conversations, migration, logout, and data-loss limitations.
-- [ ] Update `doc/wiki/footguns/` with the local-only security boundary, browser
+- [x] Update `doc/wiki/footguns/` with the local-only security boundary, browser
   storage/XSS limitations, `/api/chat` remaining unauthenticated, and legacy
   conversation migration behavior.
-- [ ] Keep Google login marked not connected. Do not claim production security,
+- [x] Keep Google login marked not connected. Do not claim production security,
   server authentication, email verification, recovery, or cross-device sync.
-- [ ] Confirm all checklist items are complete or explicitly identify a genuine
+- [x] Confirm all checklist items are complete or explicitly identify a genuine
   blocker. Update this plan during execution and preserve the final verification
   results for rendezvous.
 

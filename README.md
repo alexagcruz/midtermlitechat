@@ -10,10 +10,11 @@ application.
 - Multi-turn text conversations and route switching between turns.
 - Per-response and known conversation-level token usage.
 - Create, list, reopen, rename, and delete saved conversations.
-- Browser-local persistence with `localStorage`.
+- Browser-local accounts, tab-scoped sessions, and account-specific conversation
+  persistence.
 - Server-side proxy requests. The browser never receives proxy credentials.
-- A credential-free local demo entry screen. It does not authenticate users or
-  save passwords. Google sign-in is visibly marked as not connected.
+- Local account creation and credential verification using Web Crypto. Plaintext
+  passwords are never stored. Google sign-in is visibly marked as not connected.
 
 The proxy documentation says the three interfaces currently use DeepSeek Flash.
 The route labels identify API-compatible proxy interfaces, not verified access
@@ -125,13 +126,26 @@ is optional and requires authorization and securely configured credentials.
 If a selected route has no credential configured, the server returns a safe
 configuration error. It does not expose the environment value.
 
-## Demo Entry
+## Local Account Entry
 
-The Deeda entry screen is a local presentation step. The `Log in` button opens
-the workbench with blank or arbitrary field values. The app does not validate,
-transmit, or store the password. The Google button is disabled and says that
-Google sign-in is not connected. This screen does not protect a deployment or
-the server-side proxy credentials.
+The entry screen provides `Log in` and `Create account`. Account creation uses a
+display name, email, password, and password confirmation. Email is trimmed and
+lowercased for the local identifier. Passwords must contain at least eight
+characters and match the confirmation. Duplicate normalized emails are rejected.
+
+Account records are stored in browser `localStorage` under `deeda.accounts.v1`.
+The password is represented by a Web Crypto PBKDF2-HMAC-SHA-256 verifier with a
+random per-account salt and 600,000 iterations. Plaintext passwords and password
+confirmations are not stored. The active account ID is stored in tab-scoped
+`sessionStorage` under `deeda.auth.session.v1`. It survives a reload in the same
+tab and is cleared by `Log out`.
+
+Correct credentials enter the existing Deeda chat workspace. Incorrect or
+unknown credentials do not. Account authentication is browser-local UI
+authentication only. It does not protect `/api/chat`, shared proxy credentials,
+or a public deployment. Google sign-in is disabled and says that it is not
+connected. Email verification, password recovery, server-side accounts, and
+cross-device synchronization are not implemented.
 
 ## Chat and Usage Behavior
 
@@ -147,22 +161,25 @@ the server-side proxy credentials.
   known values and are marked partial if a response has missing usage.
 - Responses and conversation totals report tokens only. They do not estimate or
   charge money.
-- Conversations are stored in this browser. Browser data can be cleared or
-  modified, storage has a browser-defined quota, and data does not sync across
-  devices. Token totals in localStorage are not billing or quota records.
+- Conversations are stored per local account in this browser. Browser data can
+  be cleared or modified, storage has a browser-defined quota, and data does not
+  sync across devices. Valid legacy data under `litechat.conversations.v1` is
+  assigned to the first account that logs in and migrated to that account's
+  storage key. Token totals in browser storage are not billing or quota records.
 - Prompts are sent to the external LiteChat proxy. This application does not
   make claims about proxy retention beyond the public proxy documentation.
 
 If CodeRange access is unrestricted, protect the deployment with an approved
-runtime access restriction before exposing shared proxy credentials. Do not
-expand this MVP into user accounts.
+runtime access restriction before exposing shared proxy credentials. Browser-local
+accounts are not a substitute for deployment access control.
 
 ## Scope
 
 This MVP excludes file uploads, multimodal input, web search, streaming,
-payments, dollar-cost estimates, user accounts, server-side conversation
-persistence, cross-device synchronization, advanced session management, model
-comparisons, and tools or agent workflows.
+payments, dollar-cost estimates, Google OAuth, email verification, password
+recovery, server-side accounts, server-side conversation persistence,
+cross-device synchronization, advanced session management, model comparisons,
+and tools or agent workflows.
 
 The approved scope and reasoning are recorded in
 `doc/canonical/litechat-midterm-mvp-decisions.md`. The feasibility study is in

@@ -82,13 +82,26 @@ pricing or billing information.
 
 ## Authentication and Runtime Access
 
-Do not implement user registration, real username/password authentication, or
-Google OAuth. Deeda may show a local demo entry screen with username/email and
-password fields. The `Log in` action accepts blank input and only opens the
-existing workbench. Do not validate, transmit, or persist the entered password.
-Disable the Google action and clearly state that Google sign-in is not connected.
-This entry screen is not authentication or an access-control boundary. Treat
-Deeda as a restricted, single-user, single-browser demonstration.
+The approved local-account scope supersedes the earlier credential-free demo
+entry decision. Deeda implements browser-local account creation and real local
+credential verification for the UI. Account creation uses display name, email,
+password, and password confirmation. Email is trimmed and lowercased. Passwords
+must have at least eight characters and are verified with a Web Crypto
+PBKDF2-HMAC-SHA-256 verifier and per-account random salt. Plaintext passwords
+are not stored.
+
+Account records are versioned in browser `localStorage`. The active account ID is
+versioned in tab-scoped `sessionStorage`; it survives a reload in the same tab
+and is removed by logout. Correct credentials enter the existing Deeda
+workbench. Unknown and incorrect credentials are rejected. Account-specific
+conversation storage and safe migration of valid legacy browser conversations
+are required.
+
+This is browser-local UI authentication only. It is not production
+authentication, deployment access control, or server-side protection for
+`/api/chat`. Google OAuth, email verification, password recovery, server-side
+accounts, and cross-device synchronization remain out of scope. Keep Google
+disabled and clearly marked as not connected.
 
 If CodeRange deployment exposure makes unrestricted use of the shared proxy
 credentials unsafe, add an appropriate runtime access restriction. Treat this
@@ -97,9 +110,9 @@ multi-user account system.
 
 ## Persistence
 
-Use browser `localStorage` for conversation and displayed usage persistence. Do
-not add a server database. Cross-device synchronization and server-side
-conversation persistence are outside this MVP.
+Use browser `localStorage` for account records, account-scoped conversations,
+and displayed usage persistence. Do not add a server database. Cross-device
+synchronization and server-side conversation persistence are outside this MVP.
 
 Document these limitations: browser data can be cleared or modified, storage is
 limited by browser quota, and history does not sync between devices. Do not use
@@ -112,7 +125,8 @@ browser-stored token totals as authoritative billing or quota records.
   (BFF).
 - **Proxy integration:** Direct server-side HTTP requests to the LiteChat proxy,
   with one adapter per documented proxy protocol.
-- **Conversation persistence:** Browser `localStorage`.
+- **Account and conversation persistence:** Browser `localStorage`, with
+  versioned account records and account-scoped conversation keys.
 - **Database:** None for the initial MVP.
 
 The browser sends chat content and a fixed route choice to a Route Handler. The
@@ -124,9 +138,10 @@ endpoints on the server.
 Next.js with React and TypeScript keeps the interactive UI and credential-safe
 server endpoints in one application. Route Handlers provide the server-side
 boundary between the browser and proxy. Direct HTTP adapters make the proxy's
-different protocols explicit and testable. `localStorage` meets the approved
-single-browser persistence requirement without introducing accounts, database
-setup, or migrations.
+different protocols explicit and testable. Browser `localStorage` and
+`sessionStorage` meet the approved local-account and single-browser persistence
+requirements without a server database. The existing global conversation key is
+retained only as a safe migration source for the first local account.
 
 ## Credentials and Secret Handling
 
@@ -152,7 +167,9 @@ Do not include these features in the initial MVP:
 | Web search | No LiteChat search service is documented, and hosted search is unavailable on the documented OpenAI Responses interface. |
 | Streaming | The protocols use different stream formats and completion/usage events. Full responses reduce integration risk in the first implementation. |
 | Payments or dollar-cost estimates | No approved prices, billing endpoint, or payment rules are available. Token counts are the approved metering scope. |
-| Google login or any user accounts | The approved deployment is a restricted single-user/single-browser demo. The local disconnected entry is presentation only; accounts are not required for that journey. |
+| Google OAuth | No provider integration is available or required. Keep the Google action disabled and marked as not connected. |
+| Email verification and password recovery | The account system is local to one browser and has no email service or recovery channel. |
+| Server-side accounts and deployment access control | Browser-local authentication does not protect `/api/chat` or shared proxy credentials. |
 | Server-side conversation persistence or cross-device synchronization | `localStorage` meets the approved single-browser requirement without adding a database or account ownership model. |
 | Advanced session management | Create, list, reopen, rename, and delete cover the approved session needs. Folders, sharing, and collaboration do not. |
 | Model comparisons | Selecting one route per turn demonstrates user choice without parallel requests or comparison workflows. |
@@ -187,18 +204,19 @@ must match the CodeRange asset prefix. Do not invent another assigned value.
 These unknowns are not product-design blockers and do not prevent planning the
 approved MVP.
 
-## Approved Deeda Presentation Update
+## Approved Deeda Presentation And Local Account Update
 
 - User-facing product name: **Deeda**. Keep the external LiteChat proxy name,
-  technical routes, credential variable names, API contracts, and localStorage
-  key unchanged.
+  technical routes, credential variable names, and API contracts unchanged.
 - Use the restrained purple/lavender Deeda identity and system fonts. Do not add
   external font or image assets.
-- Provide a polished but local-only demo entry experience. It does not add an
-  authentication service, account database, OAuth flow, cookies, or persistent
-  login state.
-- Keep existing local conversations under `litechat.conversations.v1` so this
-  presentation change does not discard browser data.
+- Provide a polished local account entry experience. It does not add an
+  authentication service, account database, OAuth flow, cookies, server-issued
+  sessions, or production access control.
+- Keep valid existing local conversations by assigning the legacy
+  `litechat.conversations.v1` data to the first account that successfully logs
+  in, then use account-specific browser storage keys. Do not use the legacy key
+  for normal account reads or writes.
 
 ## Remaining Uncertainties
 
