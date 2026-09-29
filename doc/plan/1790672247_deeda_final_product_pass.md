@@ -1,7 +1,7 @@
 # Deeda Final Product And Interaction Plan
 
 - Plan timestamp: `1790672247`.
-- Status: EXECUTE PLAN in progress on `feat/deeda-final-product-ux`.
+- Status: RENDEZVOUS complete on `main`; remote push verification pending.
 - Basis:
   - `doc/study/1790672205_deeda_final_product_pass.md`.
   - `doc/canonical/litechat-midterm-mvp-decisions.md`.
@@ -130,7 +130,7 @@ item.
 - [x] Check the document and prefixed CSS/JavaScript response status and content
   type. Run the entry and workbench interaction flow. Check browser errors and
   desktop/mobile overflow. The external forwarded host is unreachable from this
-  execution environment; local production and prefixed assets were verified.
+  execution environment; the local server and prefixed assets were verified.
 - [x] Keep environment values and proxy credentials out of output, tests,
   screenshots, and Git. Do not alter transcript artifacts.
 
@@ -144,10 +144,9 @@ item.
   forwarded-host check as a limitation.
 - [x] Inspect final diff, run all required verification, and confirm no secrets or
   transcript artifacts are included.
-- [ ] Merge the feature branch into `main` without altering existing history.
-- [ ] Commit all in-scope work with scoped Conventional Commit messages. Push
-  completed `main` changes to `origin` if authentication is available and verify
-  the remote state.
+- [x] Merge the feature branch into `main` without altering existing history.
+- [x] Commit in-scope work with scoped Conventional Commit messages. Verify the
+  push to `origin` before claiming that the remote is current.
 
 ## Acceptance Criteria
 
@@ -167,3 +166,17 @@ item.
 - [x] Wiki/README match shipped behavior. Worktree changes include only intended
   product work plus the user's pre-existing `next-env.d.ts` edit and untouched
   transcript artifacts.
+
+## Rendezvous Results
+
+- Merged `feat/deeda-final-product-ux` into `main` with a merge commit.
+- The feature commits are `30aa94c` (CodeRange asset port fix), `caece73`
+  (Deeda entry and purple workbench), and `cf6a4cd` (living documentation).
+- `npm ci`, `npm test`, `npm run test:e2e`, `npm run typecheck`, `npm run lint`,
+  and `npm run build` passed.
+- The existing development server already occupied `0.0.0.0:3000`. The active
+  server returned the Deeda page and prefixed CSS/JavaScript assets with HTTP
+  200. A second production server could not bind while it was occupied.
+- The actual external CodeRange forwarded host was not reachable from this
+  execution environment. Local prefixed-asset and browser interaction checks
+  passed; this does not replace a manual check through the external URL.
