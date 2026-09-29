@@ -52,20 +52,20 @@ planning.
 
 ### 1. Prepare the Project and Secret Handling
 
-- [ ] Before execution, check Git status and create a feature branch from the
+- [x] Before execution, check Git status and create a feature branch from the
   approved base. Do not overwrite existing work.
-- [ ] Verify the available local Node.js and npm versions. Check the selected
+- [x] Verify the available local Node.js and npm versions. Check the selected
   Next.js release requirements. Record the unresolved CodeRange runtime facts
   without inventing them.
-- [ ] Create a Next.js App Router project using TypeScript, React, and npm.
-- [ ] Add `.gitignore` protection for `.env*` local secret files before creating
+- [x] Create a Next.js App Router project using TypeScript, React, and npm.
+- [x] Add `.gitignore` protection for `.env*` local secret files before creating
   or populating any local environment file. Keep a value-free `.env.example`
   trackable if used.
-- [ ] Verify the ignore rule with Git (for example, check that `.env.local` is
+- [x] Verify the ignore rule with Git (for example, check that `.env.local` is
   ignored). Do not create a real secret file before this check passes.
-- [ ] Commit `package.json` and `package-lock.json`. Declare all runtime and test
+- [x] Commit `package.json` and `package-lock.json`. Declare all runtime and test
   dependencies. Use `npm ci` as the reproducible clean-install command.
-- [ ] Add scripts for development, lint/type checks, automated tests, production
+- [x] Add scripts for development, lint/type checks, automated tests, production
   build, and production start. Document the exact commands after verifying them.
 - [ ] Add the approved environment-variable names to setup documentation and, if
   created, `.env.example`; include names only and no values.
