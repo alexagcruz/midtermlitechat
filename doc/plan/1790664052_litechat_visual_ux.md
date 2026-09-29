@@ -152,7 +152,7 @@ implemented and verified.
 
 ### 7. Documentation and Reproducibility
 
-- [ ] Update `doc/wiki/litechat-mvp.md` only for implemented visual behavior,
+- [x] Update `doc/wiki/litechat-mvp.md` only for implemented visual behavior,
   especially mobile navigation and any changed user-facing interaction.
 - [ ] Update `doc/wiki/footguns/` if the drawer, responsive layout, or asset
   delivery introduces a noteworthy operational behavior.
@@ -161,7 +161,7 @@ implemented and verified.
 - [x] Verify `.gitignore`, package manifest, and lockfile remain unchanged except
   for intentionally approved dependency changes. Do not alter credentials or
   environment handling.
-- [ ] Run `npm ci`, `npm run build`, and the documented startup command from a
+- [x] Run `npm ci`, `npm run build`, and the documented startup command from a
   clean clone or equivalent clean dependency installation.
 
 ### 8. CodeRange Runtime Verification
@@ -172,36 +172,36 @@ implemented and verified.
   responsive layout, mobile drawer, conversation flow, and browser console.
 - [ ] Confirm the CodeRange forwarded URL does not produce horizontal overflow
   at a narrow mobile viewport.
-- [ ] Do not run live proxy requests unless instructor authorization and secure
+- [x] Do not run live proxy requests unless instructor authorization and secure
   runtime credentials are available. Mocked tests remain required.
 
 ## Acceptance Criteria
 
-- [ ] Local CSS delivery is confirmed. The global stylesheet is imported, the
+- [x] Local CSS delivery is confirmed. The global stylesheet is imported, the
   generated CSS asset returns successfully, and no local console/chunk error
   explains the visual result.
-- [ ] The desktop UI reads as a polished, restrained AI workbench with a clear
+- [x] The desktop UI reads as a polished, restrained AI workbench with a clear
   sidebar, workspace, route context, message hierarchy, usage metadata, and
   composer.
-- [ ] The mobile UI uses compact collapsible conversation navigation and has no
+- [x] The mobile UI uses compact collapsible conversation navigation and has no
   horizontal overflow.
-- [ ] The new visual system uses system fonts and no new UI framework or external
+- [x] The new visual system uses system fonts and no new UI framework or external
   asset dependency.
-- [ ] Primary actions and controls have clear hover, focus-visible, selected,
+- [x] Primary actions and controls have clear hover, focus-visible, selected,
   disabled, loading, and error states.
-- [ ] Essential actions are available without hover and remain keyboard and touch
+- [x] Essential actions are available without hover and remain keyboard and touch
   accessible.
-- [ ] Existing route, chat, usage, persistence, loading, error, retry, rename,
+- [x] Existing route, chat, usage, persistence, loading, error, retry, rename,
   delete, and recovery behavior remains unchanged.
-- [ ] All existing automated tests pass. New tests cover only changed responsive
+- [x] All existing automated tests pass. New tests cover only changed responsive
   and interaction behavior.
-- [ ] The browser tests use semantic assertions and do not lock the design to
+- [x] The browser tests use semantic assertions and do not lock the design to
   exact colors or pixel values.
-- [ ] README and `doc/wiki/` accurately describe the implemented UI behavior.
+- [x] README and `doc/wiki/` accurately describe the implemented UI behavior.
 - [ ] CodeRange verification confirms the CSS asset loads through the forwarded
   path, the application works on desktop and mobile, and the browser console has
   no relevant asset or hydration errors.
-- [ ] No deferred product feature is added.
+- [x] No deferred product feature is added.
 
 ## Execution Boundary
 
