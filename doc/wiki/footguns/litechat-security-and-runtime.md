@@ -22,3 +22,9 @@
   Normal tests use mocked proxy responses and do not require real credentials.
 - Do not expose a deployment with shared proxy credentials to unrestricted users.
   Add an approved runtime access restriction if CodeRange exposure requires it.
+- On mobile, the sidebar is a drawer. Use the `Chats` control to open it and the
+  backdrop or `Close` control to dismiss it. Do not assume desktop sidebar
+  controls remain visible on a narrow viewport.
+- The visual shell depends on the generated Next.js CSS asset under
+  `/_next/static/`. If the UI appears unstyled through CodeRange, inspect that
+  asset request and the browser console before changing application CSS.

@@ -75,6 +75,24 @@ assistant response. A pending request shows a loading state. A failed prompt
 remains visible and can be retried manually. The application does not retry
 proxy requests automatically.
 
+The desktop layout uses a dark sidebar for branding, new conversations, and
+saved conversations. The main workspace contains the conversation header, route
+selector, proxy disclosure, message log, token summary, and composer. User and
+assistant messages use different alignment and surfaces. The composer remains
+the primary action area.
+
+At mobile widths, the saved-conversation sidebar becomes a compact drawer. The
+`Chats` control opens it, the backdrop or `Close` control closes it, and selecting
+a conversation closes the drawer. The drawer exposes the same new, reopen,
+rename, and delete actions. The route selector expands to the available width,
+and the chat layout prevents horizontal overflow.
+
+The interface uses system fonts and CSS custom properties in
+`src/app/globals.css`. It does not load external fonts, images, or a UI
+framework. Focus-visible outlines, `aria-current`, `aria-expanded`,
+`aria-controls`, named landmarks, and labeled controls support keyboard and
+assistive technology use. Loading and error states do not rely on color alone.
+
 Conversations support create, list, reopen, rename, and delete behavior. The
 application saves conversations in browser `localStorage` under a versioned
 storage key. Browser data can be cleared or modified, storage has a browser
