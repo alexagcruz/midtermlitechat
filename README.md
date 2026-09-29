@@ -77,6 +77,15 @@ runtime provides it. Do not hardcode the CodeRange port. The assigned CodeRange
 port, forwarded-host behavior, and runtime version must be checked in the
 deployment environment. A localhost check does not prove external access.
 
+CodeRange provides `VSCODE_PROXY_URI` with a `/proxy/{{port}}` path template.
+Next.js uses that path and the assigned `PORT` for its generated CSS and
+JavaScript asset URLs. The proxy origin is not included. Local development keeps
+Next.js's default asset paths when the forwarded URI is not present. For a
+production build, preserve the same CodeRange `VSCODE_PROXY_URI` and `PORT`
+values for both `npm run build` and `npm start` because Next.js embeds the asset
+prefix in its output. Do not configure `basePath`: CodeRange strips the forwarded
+path before it sends requests to Next.js.
+
 ## Proxy Configuration
 
 The application calls `https://proxy.litechat.ai` from a Next.js Route Handler.

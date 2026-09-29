@@ -25,6 +25,11 @@
 - On mobile, the sidebar is a drawer. Use the `Chats` control to open it and the
   backdrop or `Close` control to dismiss it. Do not assume desktop sidebar
   controls remain visible on a narrow viewport.
-- The visual shell depends on the generated Next.js CSS asset under
-  `/_next/static/`. If the UI appears unstyled through CodeRange, inspect that
-  asset request and the browser console before changing application CSS.
+- Next.js generates root-relative `/_next/static/` asset URLs by default. In
+  CodeRange, `VSCODE_PROXY_URI` supplies the `/proxy/{{port}}` path template and
+  `PORT` supplies the assigned port. `next.config.ts` uses that path as the
+  `assetPrefix`, so generated CSS and JavaScript requests stay under the
+  forwarded URL. CodeRange strips this prefix before forwarding requests; do not
+  set `basePath`. If the UI appears unstyled, inspect the CSS request and browser
+  console before changing application CSS. A production build must use the same
+  forwarded URI and port as its runtime.

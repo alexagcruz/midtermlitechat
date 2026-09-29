@@ -55,6 +55,12 @@ during rendezvous. The application was also manually opened in a browser
 through the CodeRange forwarded proxy URL. OpenCode could not independently
 reach that forwarded URL from its execution environment.
 
+CodeRange supplies `VSCODE_PROXY_URI` with its forwarded `/proxy/{{port}}` path.
+Next.js uses that path and `PORT` for generated CSS and JavaScript asset URLs.
+Unset forwarded runtime variables retain the default asset paths for local
+development. Production builds must use the same forwarded URI and port as the
+production server.
+
 ## Proxy Routes
 
 The server calls `https://proxy.litechat.ai` through `POST /api/chat`. It selects
