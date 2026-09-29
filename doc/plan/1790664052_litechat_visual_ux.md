@@ -154,7 +154,7 @@ implemented and verified.
 
 - [x] Update `doc/wiki/litechat-mvp.md` only for implemented visual behavior,
   especially mobile navigation and any changed user-facing interaction.
-- [ ] Update `doc/wiki/footguns/` if the drawer, responsive layout, or asset
+- [x] Update `doc/wiki/footguns/` if the drawer, responsive layout, or asset
   delivery introduces a noteworthy operational behavior.
 - [x] Keep README setup and runtime commands accurate. Do not add secret values.
 - [x] Confirm no external font, image, or UI framework dependency was added.
