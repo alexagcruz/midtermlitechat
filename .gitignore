@@ -1,0 +1,17 @@
+# Local secret configuration. Keep only a value-free example trackable.
+.env*
+!.env.example
+
+# Dependencies and generated output.
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Local tooling and operating-system files.
+*.tsbuildinfo
+.DS_Store
