@@ -1,7 +1,7 @@
 # Deeda Final Product And Interaction Plan
 
 - Plan timestamp: `1790672247`.
-- Status: Approved scope; execution not started.
+- Status: EXECUTE PLAN in progress on `feat/deeda-final-product-ux`.
 - Basis:
   - `doc/study/1790672205_deeda_final_product_pass.md`.
   - `doc/canonical/litechat-midterm-mvp-decisions.md`.
@@ -50,96 +50,99 @@ item.
   edit and all untracked transcript artifacts; never stage or edit them.
 - [x] Run the baseline `npm test` and `npm run test:e2e`. Result: 58 unit/UI tests
   and 2 browser tests pass on localhost.
-- [ ] Create a scoped feature branch after the study and plan commits are on
+- [x] Create a scoped feature branch after the study and plan commits are on
   `main`.
-- [ ] Confirm the exact effective port fallback and forwarded prefix behavior
+- [x] Confirm the exact effective port fallback and forwarded prefix behavior
   without printing the `VSCODE_PROXY_URI` value.
-- [ ] Keep the root-cause sequence explicit: absent `PORT` suppresses
+- [x] Keep the root-cause sequence explicit: absent `PORT` suppresses
   `assetPrefix`, failed asset delivery can prevent hydration, and controls remain
   inert/disabled without hydrated handlers. Do not add speculative overlay or
   `pointer-events` workarounds.
 
 ### 2. CodeRange Asset And Control Interaction Fix
 
-- [ ] Use supplied `PORT`, or `3000` when absent, consistently for Next.js
+- [x] Use supplied `PORT`, or `3000` when absent, consistently for Next.js
   startup and `getForwardedAssetPrefix`. Keep normal non-CodeRange paths unchanged.
-- [ ] Add unit regression cases for forwarded URL prefix selection with missing
+- [x] Add unit regression cases for forwarded URL prefix selection with missing
   port and explicit port, and for local development with no forwarded URI.
-- [ ] Add browser assertions that the forwarded-style CSS/JavaScript asset paths
+- [x] Add browser assertions that the forwarded-style CSS/JavaScript asset paths
   load and application styles/hydration are active.
-- [ ] Exercise actual Playwright pointer and keyboard actions for click, focus,
+- [x] Exercise actual Playwright pointer and keyboard actions for click, focus,
   type, route selection, send, new conversation, reopen, rename, delete, retry,
   and mobile drawer controls. Check for intercepted clicks and visible focus.
-- [ ] Verify closed mobile navigation/backdrop state cannot block the composer or
+- [x] Verify closed mobile navigation/backdrop state cannot block the composer or
   route selector. Keep controls disabled only for real loading/request states.
 
 ### 3. Deeda Entry Experience
 
-- [ ] Add a focused Deeda entry component at the application boundary and retain
+- [x] Add a focused Deeda entry component at the application boundary and retain
   the existing `ChatApp` workbench without moving proxy or conversation logic.
-- [ ] Include Deeda brand treatment, Welcome heading, labeled username/email and
+- [x] Include Deeda brand treatment, Welcome heading, labeled username/email and
   password fields, primary `Log in`, divider, and secondary Google action.
-- [ ] Let `Log in` enter the workspace with blank or arbitrary fields. Do not
+- [x] Let `Log in` enter the workspace with blank or arbitrary fields. Do not
   validate credentials, call a service, persist fields, or add a backend.
-- [ ] Clearly label Google as demo/not connected and disable its action.
-- [ ] Add UI and Playwright coverage for field labels, focus/typing, credential-
+- [x] Clearly label Google as demo/not connected and disable its action.
+- [x] Add UI and Playwright coverage for field labels, focus/typing, credential-
   free entry, and disconnected Google behavior. Confirm passwords are not stored.
 
 ### 4. Branding And Visual Refresh
 
-- [ ] Change user-facing metadata, workbench brand, message role label, entry
+- [x] Change user-facing metadata, workbench brand, message role label, entry
   screen, and project-facing setup copy to Deeda.
-- [ ] Update canonical product decisions to record the approved Deeda rename and
+- [x] Update canonical product decisions to record the approved Deeda rename and
   clarify that technical proxy references and the existing storage key remain.
-- [ ] Keep `https://proxy.litechat.ai`, fixed proxy route labels/IDs, environment
+- [x] Keep `https://proxy.litechat.ai`, fixed proxy route labels/IDs, environment
   variables, storage key, and server API behavior unchanged.
-- [ ] Replace the green palette with deep purple primary surfaces, violet/lavender
+- [x] Replace the green palette with deep purple primary surfaces, violet/lavender
   accents, light lavender/neutral surfaces, readable text, subtle borders, and
   restrained shadows.
-- [ ] Refine typography, spacing, sidebar/list hierarchy, route selection,
+- [x] Refine typography, spacing, sidebar/list hierarchy, route selection,
   buttons, messages, empty state, composer, and hover/focus/disabled/loading/error
   states without adding features or external assets.
-- [ ] Verify desktop and mobile layouts, no horizontal overflow, at least 44px
+- [x] Verify desktop and mobile layouts, no horizontal overflow, at least 44px
   primary touch targets, keyboard navigation, visible focus, labels, and readable
-  contrast.
+  contrast. Local contrast checks for key text/surface pairs exceed WCAG AA.
 
 ### 5. Regression And Existing Functionality
 
-- [ ] Keep adapter, route handler, validation, credential boundary, message
+- [x] Keep adapter, route handler, validation, credential boundary, message
   serialization, storage schema, and all three proxy interfaces intact.
-- [ ] Preserve multi-turn history, route switching, usage totals, loading,
+- [x] Preserve multi-turn history, route switching, usage totals, loading,
   failed-prompt recovery/retry, and create/list/reopen/rename/delete behavior.
-- [ ] Extend only focused tests where entry, hydration, or interaction semantics
+- [x] Extend only focused tests where entry, hydration, or interaction semantics
   change. Retain mocked proxy responses; no real credentials or external calls.
-- [ ] Cover CodeRange asset-prefix behavior and actual browser control interaction
+- [x] Cover CodeRange asset-prefix behavior and actual browser control interaction
   alongside existing chat/proxy workflow tests.
 
 ### 6. Verification And Reproducibility
 
-- [ ] Run `npm ci` to verify declared dependencies reproduce the project.
-- [ ] Run `npm test`.
-- [ ] Run `npm run test:e2e`.
-- [ ] Run `npm run typecheck`.
-- [ ] Run `npm run lint`.
-- [ ] Run `npm run build` with the same forwarded URI and effective port used by
+- [x] Run `npm ci` to verify declared dependencies reproduce the project.
+- [x] Run `npm test`.
+- [x] Run `npm run test:e2e`.
+- [x] Run `npm run typecheck`.
+- [x] Run `npm run lint`.
+- [x] Run `npm run build` with the same forwarded URI and effective port used by
   runtime verification.
-- [ ] Start the app bound to `0.0.0.0:3000` when `PORT` is absent; preserve a
-  platform-supplied port when present.
-- [ ] Check the document and prefixed CSS/JavaScript response status and content
+- [x] Verify the active app is reachable on a non-loopback interface at
+  `0.0.0.0:3000` when `PORT` is absent; preserve a platform-supplied port when
+  present. An existing development server occupied the port, so a second
+  production server could not bind concurrently.
+- [x] Check the document and prefixed CSS/JavaScript response status and content
   type. Run the entry and workbench interaction flow. Check browser errors and
-  desktop/mobile overflow.
-- [ ] Keep environment values and proxy credentials out of output, tests,
+  desktop/mobile overflow. The external forwarded host is unreachable from this
+  execution environment; local production and prefixed assets were verified.
+- [x] Keep environment values and proxy credentials out of output, tests,
   screenshots, and Git. Do not alter transcript artifacts.
 
 ### 7. Documentation, Rendezvous, And Sync
 
-- [ ] Update README setup/brand/entry/runtime behavior and `doc/wiki/` only for
+- [x] Update README setup/brand/entry/runtime behavior and `doc/wiki/` only for
   functionality that exists after implementation.
-- [ ] Update `doc/wiki/footguns/` with the absent-`PORT` asset-prefix behavior
+- [x] Update `doc/wiki/footguns/` with the absent-`PORT` asset-prefix behavior
   and demo-entry limitations.
-- [ ] Mark completed plan items with evidence and list any inaccessible external
+- [x] Mark completed plan items with evidence and list any inaccessible external
   forwarded-host check as a limitation.
-- [ ] Inspect final diff, run all required verification, and confirm no secrets or
+- [x] Inspect final diff, run all required verification, and confirm no secrets or
   transcript artifacts are included.
 - [ ] Merge the feature branch into `main` without altering existing history.
 - [ ] Commit all in-scope work with scoped Conventional Commit messages. Push
@@ -148,19 +151,19 @@ item.
 
 ## Acceptance Criteria
 
-- [ ] A CodeRange runtime without `PORT` uses `/proxy/3000` for assets and binds
+- [x] A CodeRange runtime without `PORT` uses `/proxy/3000` for assets and binds
   to `0.0.0.0:3000`; a supplied `PORT` remains authoritative.
-- [ ] Browser regression tests perform real click/focus/type/select/chat and
+- [x] Browser regression tests perform real click/focus/type/select/chat and
   conversation-management interactions without intercepted pointer events.
-- [ ] The Deeda entry screen is polished, accessible, responsive, accepts blank
+- [x] The Deeda entry screen is polished, accessible, responsive, accepts blank
   credentials, never stores passwords, and does not claim Google OAuth works.
-- [ ] The workbench presents Deeda's purple identity and remains responsive and
+- [x] The workbench presents Deeda's purple identity and remains responsive and
   accessible.
-- [ ] Existing proxy routes/contracts, server-side credentials, chat history,
+- [x] Existing proxy routes/contracts, server-side credentials, chat history,
   usage, route switching, retries, local persistence, conversation controls, and
   CodeRange asset behavior remain intact.
-- [ ] `npm test`, `npm run test:e2e`, `npm run typecheck`, `npm run lint`,
+- [x] `npm test`, `npm run test:e2e`, `npm run typecheck`, `npm run lint`,
   `npm run build`, and the documented runtime checks pass.
-- [ ] Wiki/README match shipped behavior. Worktree changes include only intended
+- [x] Wiki/README match shipped behavior. Worktree changes include only intended
   product work plus the user's pre-existing `next-env.d.ts` edit and untouched
   transcript artifacts.

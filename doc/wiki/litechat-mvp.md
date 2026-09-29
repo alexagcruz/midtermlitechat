@@ -1,10 +1,15 @@
-# LiteChat MVP
+# Deeda MVP
 
 ## Purpose
 
-The application provides one text chat interface for three fixed LiteChat proxy
+Deeda provides one text chat interface for three fixed LiteChat proxy
 interfaces. It supports multi-turn chat, route switching, token usage display,
 and browser-local saved conversations.
+
+The entry screen is a local demo presentation step. `Log in` opens the existing
+workbench with blank or arbitrary field values. The app does not validate,
+transmit, or persist the password. Google sign-in is disabled and marked as not
+connected. This screen is not authentication or deployment access control.
 
 The application is a usage-metered prototype. It does not process payments or
 calculate monetary charges. The proxy documentation states that the three
@@ -49,17 +54,20 @@ Run the production server:
 npm start
 ```
 
-The development and production commands bind to `0.0.0.0`. The runtime reads
-`PORT` when provided. The application was started successfully on port `3000`
-during rendezvous. The application was also manually opened in a browser
-through the CodeRange forwarded proxy URL. OpenCode could not independently
-reach that forwarded URL from its execution environment.
+The development and production commands bind to `0.0.0.0`. They use port `3000`
+when `PORT` is absent and preserve a supplied `PORT`. The server and generated
+asset prefix use the same effective port. The optimized production build passed.
+An existing development server occupied port `3000`, so a second production
+server could not bind there. The active server returned the Deeda page and its
+prefixed CSS/JavaScript assets with HTTP 200. A direct request to the external
+forwarded host was not reachable from this execution environment, so that check
+does not prove the external browser path.
 
 CodeRange supplies `VSCODE_PROXY_URI` with its forwarded `/proxy/{{port}}` path.
-Next.js uses that path and `PORT` for generated CSS and JavaScript asset URLs.
-Unset forwarded runtime variables retain the default asset paths for local
-development. Production builds must use the same forwarded URI and port as the
-production server.
+Next.js uses that path and the effective port for generated CSS and JavaScript
+asset URLs. If `PORT` is absent, the effective port is `3000`. Without a
+forwarded URI, Next.js uses its default local asset paths. Production builds
+must use the same forwarded URI and effective port as the production server.
 
 ## Proxy Routes
 
@@ -81,11 +89,11 @@ assistant response. A pending request shows a loading state. A failed prompt
 remains visible and can be retried manually. The application does not retry
 proxy requests automatically.
 
-The desktop layout uses a dark sidebar for branding, new conversations, and
-saved conversations. The main workspace contains the conversation header, route
-selector, proxy disclosure, message log, token summary, and composer. User and
-assistant messages use different alignment and surfaces. The composer remains
-the primary action area.
+The desktop Deeda layout uses a deep-purple sidebar for branding, new
+conversations, and saved conversations. The main workspace contains the
+conversation header, route selector, proxy disclosure, message log, token
+summary, and composer. User and assistant messages use different alignment and
+surfaces. The composer remains the primary action area.
 
 At mobile widths, the saved-conversation sidebar becomes a compact drawer. The
 `Chats` control opens it, the backdrop or `Close` control closes it, and selecting
@@ -93,7 +101,7 @@ a conversation closes the drawer. The drawer exposes the same new, reopen,
 rename, and delete actions. The route selector expands to the available width,
 and the chat layout prevents horizontal overflow.
 
-The interface uses system fonts and CSS custom properties in
+The purple/lavender interface uses system fonts and CSS custom properties in
 `src/app/globals.css`. It does not load external fonts, images, or a UI
 framework. Focus-visible outlines, `aria-current`, `aria-expanded`,
 `aria-controls`, named landmarks, and labeled controls support keyboard and
@@ -131,6 +139,8 @@ credentials have not been verified.
 ## Application Structure
 
 - `src/app/page.tsx`: application entry page.
+- `src/components/deeda-app.tsx` and `src/components/deeda-entry.tsx`: local
+  demo entry state and credential-free entry screen.
 - `src/components/chat-app.tsx`: interactive chat UI, route selector, composer,
   conversation list, usage display, and local session actions.
 - `src/app/api/chat/route.ts`: server-only `POST /api/chat` boundary.

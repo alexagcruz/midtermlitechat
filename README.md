@@ -1,7 +1,8 @@
-# LiteChat Midterm MVP
+# Deeda Midterm MVP
 
-A text-first chat prototype for selecting fixed LiteChat proxy interfaces and
-reviewing token usage. It is not a payment or billing application.
+Deeda is a text-first chat prototype for selecting three fixed LiteChat proxy
+interfaces and reviewing token usage. It is not a payment or billing
+application.
 
 ## Features
 
@@ -11,6 +12,8 @@ reviewing token usage. It is not a payment or billing application.
 - Create, list, reopen, rename, and delete saved conversations.
 - Browser-local persistence with `localStorage`.
 - Server-side proxy requests. The browser never receives proxy credentials.
+- A credential-free local demo entry screen. It does not authenticate users or
+  save passwords. Google sign-in is visibly marked as not connected.
 
 The proxy documentation says the three interfaces currently use DeepSeek Flash.
 The route labels identify API-compatible proxy interfaces, not verified access
@@ -40,8 +43,8 @@ Start the local development server:
 npm run dev
 ```
 
-The development server binds to `0.0.0.0`. Next.js selects its local default
-port unless `PORT` is set.
+The development server binds to `0.0.0.0:3000` unless `PORT` is set. A supplied
+`PORT` selects both the listening port and CodeRange asset prefix.
 
 Run quality checks and tests:
 
@@ -72,17 +75,18 @@ Start the production build with:
 npm start
 ```
 
-The production server binds to `0.0.0.0` and reads the port from `PORT` when the
-runtime provides it. Do not hardcode the CodeRange port. The assigned CodeRange
-port, forwarded-host behavior, and runtime version must be checked in the
+The production server binds to `0.0.0.0:3000` unless the runtime supplies
+`PORT`. Do not expose the shared proxy credentials to unrestricted users. Check
+the assigned CodeRange port, forwarded-host behavior, and runtime version in the
 deployment environment. A localhost check does not prove external access.
 
 CodeRange provides `VSCODE_PROXY_URI` with a `/proxy/{{port}}` path template.
-Next.js uses that path and the assigned `PORT` for its generated CSS and
-JavaScript asset URLs. The proxy origin is not included. Local development keeps
+Next.js uses that path and the effective port for generated CSS and JavaScript
+asset URLs. If `PORT` is absent, the runtime uses `3000` for both the server and
+asset prefix. The proxy origin is not included. Local development keeps
 Next.js's default asset paths when the forwarded URI is not present. For a
-production build, preserve the same CodeRange `VSCODE_PROXY_URI` and `PORT`
-values for both `npm run build` and `npm start` because Next.js embeds the asset
+production build, preserve the same CodeRange `VSCODE_PROXY_URI` and effective
+port for both `npm run build` and `npm start` because Next.js embeds the asset
 prefix in its output. Do not configure `basePath`: CodeRange strips the forwarded
 path before it sends requests to Next.js.
 
@@ -120,6 +124,14 @@ is optional and requires authorization and securely configured credentials.
 
 If a selected route has no credential configured, the server returns a safe
 configuration error. It does not expose the environment value.
+
+## Demo Entry
+
+The Deeda entry screen is a local presentation step. The `Log in` button opens
+the workbench with blank or arbitrary field values. The app does not validate,
+transmit, or store the password. The Google button is disabled and says that
+Google sign-in is not connected. This screen does not protect a deployment or
+the server-side proxy credentials.
 
 ## Chat and Usage Behavior
 
