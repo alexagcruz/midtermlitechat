@@ -231,3 +231,36 @@ silently invent answers:
 None of these uncertainties blocks planning or implementation of the approved
 MVP unless new evidence shows that the information is required for a specific
 task. If such a blocker appears, ask for the missing input at that time.
+
+## Final Implementation And Verification Status
+
+Deeda is implemented as a Next.js, React, and TypeScript LiteChat-style MVP.
+Users can create and log in to browser-local accounts, create and manage
+conversations, select among the supported LiteChat proxy interfaces, and view
+per-response and conversation token usage when available. Conversations and
+account records are stored in browser storage.
+
+Account verification is browser-local UI authentication, not production
+server-side authentication. There is no server-side identity system, email
+verification, password recovery, OAuth, or cross-device synchronization.
+`/api/chat` is not protected by production authentication. Proxy credentials
+remain server-side environment variables: `BUILD_OPENAI_KEY`,
+`BUILD_ANTHROPIC_KEY`, and `BUILD_GOOGLE_KEY`. Never record credential values in
+this repository.
+
+Manual verification on the GitHub-based Vercel deployment confirmed login,
+workspace access, conversation creation, a real response through the
+Anthropic-compatible proxy interface, multi-turn chat, and per-response and
+conversation token usage. This does not prove that the available proxy
+interfaces use distinct underlying vendor models. Automated localhost browser
+verification passed and uses mocked chat responses.
+
+Vercel is optional. To run locally, install dependencies with `npm ci`, set
+only the needed proxy credentials in server-side environment variables or the
+Git-ignored `.env.local`, then run `npm run dev`.
+
+During manual testing, the CodeRange forwarded `/proxy/<port>/` environment
+persistently remained on the Preparing screen. This is an environment-specific
+observation, not a general application failure. Its root cause and a production
+fix have not been established. The localhost automated browser checks passed,
+and the GitHub-based Vercel deployment loaded and operated successfully.

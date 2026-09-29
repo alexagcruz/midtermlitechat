@@ -2,9 +2,10 @@
 
 ## Purpose
 
-Deeda provides one text chat interface for three fixed LiteChat proxy
-interfaces. It supports local browser accounts, multi-turn chat, route
-switching, token usage display, and account-specific saved conversations.
+Deeda is a Next.js, React, and TypeScript LiteChat-style MVP. It provides one
+text chat interface for three fixed LiteChat proxy interfaces. It supports
+browser-local accounts, multi-turn chat, route switching, token usage display,
+and account-specific saved conversations.
 
 The account flow is a local educational MVP. It verifies credentials in the
 browser for the Deeda UI. It does not provide production authentication,
@@ -149,6 +150,20 @@ Install dependencies:
 npm ci
 ```
 
+For live proxy chat, set the server-side environment variables for the
+interfaces you will use. The app can start without credentials, but a live
+request needs its route's credential. For local development, create the
+Git-ignored `.env.local` file and replace these placeholders on your machine:
+
+```dotenv
+BUILD_OPENAI_KEY=replace-with-approved-proxy-credential
+BUILD_ANTHROPIC_KEY=replace-with-approved-proxy-credential
+BUILD_GOOGLE_KEY=replace-with-approved-proxy-credential
+```
+
+Never commit real credential values. Vercel deployment is optional and is not
+required to run the repository locally.
+
 Run the development server:
 
 ```sh
@@ -192,10 +207,23 @@ Build and runtime must use the same forwarded URI and effective port because
 Next.js embeds the asset prefix in the build output. Do not set `basePath`:
 CodeRange strips the forwarded path before forwarding requests to Next.js.
 
-The verified local runtime returned HTTP 200 and Playwright verified forwarded
-`/proxy/3000/` asset paths when `VSCODE_PROXY_URI` was configured without
-`PORT`. The external forwarded host was not reachable from the verification
-environment, so local success does not prove external CodeRange access.
+Localhost automated browser verification passed. Playwright also verified
+forwarded `/proxy/3000/` asset paths in a local simulation when
+`VSCODE_PROXY_URI` was configured without `PORT`. During manual testing, the
+actual CodeRange forwarded `/proxy/<port>/` environment persistently remained
+on the Preparing screen. This is an environment-specific observation; its root
+cause has not been established. Do not treat it as a general application
+failure or claim a verified production fix.
+
+## Deployment Verification
+
+The GitHub-based Vercel deployment was manually verified. It passed the
+Preparing screen, accepted login, loaded the Deeda workspace, and created a
+conversation. A real request through the Anthropic-compatible proxy interface
+returned a response. Multi-turn chat and per-response and conversation token
+usage were demonstrated. This does not verify all proxy interfaces or establish
+that they use distinct underlying vendor models. The automated browser suite
+uses mocked chat responses.
 
 ## Testing
 

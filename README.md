@@ -1,8 +1,8 @@
 # Deeda Midterm MVP
 
-Deeda is a text-first chat prototype for selecting three fixed LiteChat proxy
-interfaces and reviewing token usage. It is not a payment or billing
-application.
+Deeda is a Next.js, React, and TypeScript text-first MVP for selecting among
+three fixed LiteChat proxy interfaces and reviewing token usage. It is not a
+payment or billing application.
 
 ## Features
 
@@ -37,6 +37,21 @@ From a fresh clone, install the declared dependencies:
 ```sh
 npm ci
 ```
+
+For live proxy chat, configure the credential for each interface you plan to
+use. The app can start without credentials, but a live request needs its
+server-side credential. One local option is to create the Git-ignored
+`.env.local` file with placeholder values, then replace only the needed values
+on your machine:
+
+```dotenv
+BUILD_OPENAI_KEY=replace-with-approved-proxy-credential
+BUILD_ANTHROPIC_KEY=replace-with-approved-proxy-credential
+BUILD_GOOGLE_KEY=replace-with-approved-proxy-credential
+```
+
+Do not commit `.env.local` or put real values in tracked files. A Vercel
+deployment is optional; it is not required to run this repository locally.
 
 Start the local development server:
 
@@ -91,6 +106,23 @@ port for both `npm run build` and `npm start` because Next.js embeds the asset
 prefix in its output. Do not configure `basePath`: CodeRange strips the forwarded
 path before it sends requests to Next.js.
 
+## Verified Behavior And Deployment
+
+The GitHub-based Vercel deployment was manually verified: it passed the
+Preparing screen, accepted login, loaded the Deeda workspace, and created a
+conversation. A real request through the Anthropic-compatible proxy interface
+returned a response. Multi-turn chat and per-response and conversation token
+usage were also demonstrated. This does not establish that the three proxy
+interfaces use distinct underlying vendor models or verify live requests
+through every interface. Automated browser tests use mocked chat responses.
+
+During manual testing, the CodeRange forwarded `/proxy/<port>/` environment
+persistently remained on the Preparing screen. Localhost automated browser
+verification passed, and the GitHub-based Vercel deployment loaded and operated
+successfully. The CodeRange observation is limited to that forwarded
+environment; its root cause is not established and it is not evidence of a
+general Deeda startup failure.
+
 ## Proxy Configuration
 
 The application calls `https://proxy.litechat.ai` from a Next.js Route Handler.
@@ -111,11 +143,9 @@ The server reads credentials from these environment variables:
 Use the instructor-approved credential for each route only after confirming it
 is accepted by the corresponding LiteChat proxy endpoint. Credential provenance
 has not been verified by this application. Do not assume a credential is an
-ordinary direct-provider key. Use the CodeRange secret store or another approved
-runtime secret mechanism. For local work, set the variables in the server
-process. If you create `.env.local`, first confirm that Git ignores it.
-`.gitignore` excludes local `.env*` files and permits only a value-free
-`.env.example`.
+ordinary direct-provider key. In deployment, use an approved runtime secret
+mechanism. `.gitignore` excludes local `.env*` files and permits only a
+value-free `.env.example`.
 
 Never put actual credential values in source code, browser code, localStorage,
 Git, tests, fixtures, logs, or documentation. Never print credential values

@@ -70,13 +70,20 @@
 - Browser-local token totals are not billing, quota, or payment records.
 - A failed prompt remains visible and can be retried. The app does not retry
   proxy requests automatically.
-- Live LiteChat proxy requests with instructor credentials remain unverified.
-  Normal tests use mocked responses and do not require real credentials.
+- A real request through the Anthropic-compatible proxy interface was manually
+  verified on the deployed app. This does not verify live requests through every
+  interface or distinct underlying vendor models. Automated tests use mocked
+  responses and do not require real credentials.
 
 ## CodeRange And Mobile Runtime
 
-- Localhost success does not prove CodeRange access. Verify the actual forwarded
-  host when available and use the platform-assigned port.
+- The actual CodeRange forwarded `/proxy/<port>/` environment persistently
+  remained on the Preparing screen during manual testing. Treat this as an
+  environment-specific observation. Its root cause is not established, and it
+  is not evidence of a general app failure or a verified production fix.
+- Localhost automated browser verification passed, and the GitHub-based Vercel
+  deployment loaded and operated successfully. Neither result explains the
+  CodeRange forwarded-path behavior.
 - CodeRange can provide `VSCODE_PROXY_URI` without `PORT`. In that case Deeda
   uses `3000` for the server and `/proxy/3000` for the asset prefix. If the
   platform supplies `PORT`, that value is authoritative.
