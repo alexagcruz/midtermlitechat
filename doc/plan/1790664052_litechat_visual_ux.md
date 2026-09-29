@@ -205,6 +205,7 @@ implemented and verified.
 
 ## Execution Boundary
 
-This document is the approved visual UX plan only. Do not implement until the
-EXECUTE PLAN stage begins. Do not mark a task complete because code exists;
-verify the relevant behavior and tests first.
+The visual implementation and repository-local verification are complete on the
+execution branch. The remaining unchecked items require an accessible CodeRange
+forwarded browser session, which was not available to this agent environment.
+Do not mark those runtime checks complete from local results alone.
