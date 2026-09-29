@@ -15,5 +15,10 @@
   Browser data can be cleared, changed, or lost when storage limits are reached.
 - Localhost success does not prove CodeRange access. Verify the application
   through the actual forwarded host and use the platform-assigned port.
+- Rendezvous verified a successful local production start on port `3000` and a
+  manual browser check through the CodeRange forwarded proxy URL. OpenCode could
+  not independently reach that forwarded URL from its environment.
+- Live LiteChat proxy requests with instructor credentials remain unverified.
+  Normal tests use mocked proxy responses and do not require real credentials.
 - Do not expose a deployment with shared proxy credentials to unrestricted users.
   Add an approved runtime access restriction if CodeRange exposure requires it.

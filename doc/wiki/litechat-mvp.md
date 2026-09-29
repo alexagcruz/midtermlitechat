@@ -19,6 +19,7 @@ Requirements:
 - Node.js `>=20.9.0`.
 - npm.
 - Chromium and its system dependencies for browser tests.
+- The verified CodeRange environment provided Node.js `v22.23.1`.
 
 Install dependencies:
 
@@ -49,8 +50,10 @@ npm start
 ```
 
 The development and production commands bind to `0.0.0.0`. The runtime reads
-`PORT` when provided. Verify the actual CodeRange port and forwarded-host
-configuration in the deployment environment.
+`PORT` when provided. The application was started successfully on port `3000`
+during rendezvous. The application was also manually opened in a browser
+through the CodeRange forwarded proxy URL. OpenCode could not independently
+reach that forwarded URL from its execution environment.
 
 ## Proxy Routes
 
@@ -98,4 +101,34 @@ The server reads these environment variables:
 Set values only through an approved secret mechanism. Never store values in the
 repository, browser code, browser storage, logs, tests, fixtures, or
 documentation. Normal tests use mocked proxy responses and do not require real
-credentials.
+credentials. Live LiteChat proxy requests using the instructor-provided
+credentials have not been verified.
+
+## Application Structure
+
+- `src/app/page.tsx`: application entry page.
+- `src/components/chat-app.tsx`: interactive chat UI, route selector, composer,
+  conversation list, usage display, and local session actions.
+- `src/app/api/chat/route.ts`: server-only `POST /api/chat` boundary.
+- `src/lib/chat/`: fixed route IDs, shared message/usage types, API response
+  schemas, and request validation.
+- `src/lib/proxy/`: fixed route configuration, protocol adapters, normalized
+  usage parsing, timeout handling, and safe proxy failures.
+- `src/lib/storage/`: versioned `localStorage` persistence and validation.
+- `src/components/*.test.tsx`, `src/lib/**/*.test.ts`, and
+  `src/app/api/chat/route.test.ts`: automated unit, UI, storage, adapter, and
+  route tests.
+- `e2e/chat-flow.spec.ts`: Playwright browser flows with mocked `/api/chat`.
+
+## Architecture
+
+The browser sends text message history and a fixed route ID to the same-origin
+Next.js Route Handler. The handler validates the request, selects the fixed
+server-side endpoint and credential, calls the corresponding LiteChat proxy
+interface, and returns normalized assistant text and token usage. Credentials
+and upstream endpoints never enter browser code or `localStorage`.
+
+The application uses Next.js, React, TypeScript, Zod, direct server-side
+`fetch`, Vitest, React Testing Library, and Playwright. It has no server
+database, accounts, payment system, file upload flow, web search, streaming, or
+server-side conversation persistence.
