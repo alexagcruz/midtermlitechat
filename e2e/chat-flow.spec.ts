@@ -1,11 +1,5 @@
 import { expect, test } from "@playwright/test";
-
-async function enterDeeda(page: import("@playwright/test").Page) {
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Welcome to Deeda" })).toBeVisible();
-  await page.getByRole("button", { name: "Log in" }).click();
-  await expect(page.getByRole("heading", { name: "Your AI workbench" })).toBeVisible();
-}
+import { createAndEnter, openRegistration, registerAccount, login } from "./helpers";
 
 function assistantResponse(content: string, routeId: string) {
   return {
@@ -47,7 +41,7 @@ test("supports a multi-turn route switch and browser-local session workflow", as
     });
   });
 
-  await enterDeeda(page);
+  await createAndEnter(page);
   const stylesheetPaths = await page.locator('link[rel="stylesheet"]').evaluateAll((links) =>
     links.map((link) => new URL((link as HTMLLinkElement).href).pathname),
   );
@@ -103,7 +97,7 @@ test("supports a multi-turn route switch and browser-local session workflow", as
   await page.getByRole("textbox", { name: "Conversation name" }).fill("Research notes");
   await page.getByRole("button", { name: "Save conversation name" }).click();
   await page.reload();
-  await page.getByRole("button", { name: "Log in" }).click();
+  await expect(page.getByRole("textbox", { name: "Message" })).toBeVisible();
 
   const savedChat = page
     .getByRole("list", { name: "Saved conversations" })
@@ -128,7 +122,7 @@ test("supports a multi-turn route switch and browser-local session workflow", as
 
   await page.setViewportSize({ width: 375, height: 812 });
   await page.reload();
-  await page.getByRole("button", { name: "Log in" }).click();
+  await expect(page.getByRole("textbox", { name: "Message" })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Message" })).toBeVisible();
   const dimensions = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
@@ -196,7 +190,7 @@ test("preserves a failed prompt and retries it without another external request"
     });
   });
 
-  await enterDeeda(page);
+  await createAndEnter(page);
   await expect(page.getByRole("textbox", { name: "Message" })).toBeEnabled();
   await page.getByRole("textbox", { name: "Message" }).fill("Keep this prompt");
   await page.getByRole("button", { name: "Send message" }).click();
@@ -210,33 +204,28 @@ test("preserves a failed prompt and retries it without another external request"
   expect(attempts).toBe(2);
 });
 
-test("offers a credential-free Deeda entry without persisting the password", async ({
+test("keeps the account entry accessible and responsive on mobile", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Welcome to Deeda" })).toBeVisible();
+  await openRegistration(page);
+  const displayNameField = page.getByLabel("Display name");
+  await expect(displayNameField).toBeFocused();
   await page.keyboard.press("Tab");
+  await expect(page.getByLabel("Email")).toBeFocused();
   await page.keyboard.press("Tab");
-  const usernameField = page.getByLabel("Username or email");
-  await expect(usernameField).toBeFocused();
-  await page.keyboard.press("Tab");
-  const passwordField = page.getByLabel("Password");
+  const passwordField = page.getByLabel("Password", { exact: true });
   await expect(passwordField).toBeFocused();
   expect(await passwordField.evaluate((element) => getComputedStyle(element).outlineWidth)).not.toBe("0px");
-  await usernameField.fill("demo@example.com");
-  await passwordField.fill("temporary-demo-password");
   await expect(page.getByRole("button", { name: /continue with google/i })).toBeDisabled();
-  await expect(page.getByText("Google sign-in is not connected in this demo.")).toBeVisible();
+  await expect(page.getByText("Google sign-in is not connected.")).toBeVisible();
   const dimensions = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
     content: document.documentElement.scrollWidth,
   }));
   expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport);
-  await page.getByRole("button", { name: "Log in" }).click();
+  await registerAccount(page, "mobile@example.com");
+  await login(page, "mobile@example.com");
   await expect(page.getByRole("heading", { name: "Your AI workbench" })).toBeVisible();
-  await expect(page.getByLabel("Password")).toHaveCount(0);
-  expect(
-    await page.evaluate(() => localStorage.getItem("litechat.conversations.v1")),
-  ).toBeNull();
+  await expect(page.getByRole("textbox", { name: "Message" })).toBeEnabled();
 });

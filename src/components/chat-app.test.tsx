@@ -9,8 +9,14 @@ import {
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Conversation } from "@/lib/chat/types";
-import { saveConversations } from "@/lib/storage/conversations";
+import {
+  accountConversationsStorageKey,
+  loadConversations,
+  saveConversations,
+} from "@/lib/storage/conversations";
 import { ChatApp } from "./chat-app";
+
+const TEST_ACCOUNT_ID = "00000000-0000-4000-8000-000000000001";
 
 function proxyResponse(
   content: string,
@@ -35,8 +41,16 @@ function proxyResponse(
   );
 }
 
-function renderChat() {
-  return render(<ChatApp />);
+function renderChat(onLogout: () => void = () => {}) {
+  return render(
+    <ChatApp
+      accountId={TEST_ACCOUNT_ID}
+      displayName="Test User"
+      logoutError=""
+      migrationWarning=""
+      onLogout={onLogout}
+    />,
+  );
 }
 
 async function enterAndSend(user: ReturnType<typeof userEvent.setup>, text: string) {
@@ -189,7 +203,7 @@ describe("ChatApp", () => {
     fireEvent.submit(form!);
     fireEvent.submit(form!);
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     resolveResponse(proxyResponse("One response"));
     expect(await screen.findByText("One response")).toBeInTheDocument();
     expect(screen.getAllByTestId("message-user")).toHaveLength(1);
@@ -256,9 +270,9 @@ describe("ChatApp", () => {
         name: /Second saved promptOpenAI-compatible Chat Completions/,
       }),
     ).toBeInTheDocument();
-    expect(window.localStorage.getItem("litechat.conversations.v1")).toContain(
-      "Second saved prompt",
-    );
+    expect(
+      window.localStorage.getItem(accountConversationsStorageKey(TEST_ACCOUNT_ID)),
+    ).toContain("Second saved prompt");
   });
 
   it("keeps missing usage unknown and clearly labels the proxy interfaces", async () => {
@@ -371,7 +385,7 @@ describe("ChatApp", () => {
         },
       ],
     };
-    saveConversations([conversation]);
+    saveConversations(TEST_ACCOUNT_ID, [conversation]);
     renderChat();
 
     expect(await screen.findByRole("button", { name: "Retry this prompt" })).toBeInTheDocument();
@@ -388,6 +402,50 @@ describe("ChatApp", () => {
     expect(JSON.parse(String(init?.body)).messages).toEqual([
       { role: "user", content: "This request was interrupted" },
     ]);
+  });
+
+  it("ignores a chat response after logout so it cannot overwrite a re-login session", async () => {
+    const user = userEvent.setup();
+    let resolveResponse: (response: Response) => void = () => undefined;
+    fetchMock.mockReturnValueOnce(
+      new Promise<Response>((resolve) => {
+        resolveResponse = resolve;
+      }),
+    );
+
+    let unmountOldView: () => void = () => {};
+    const oldView = renderChat(() => unmountOldView());
+    unmountOldView = oldView.unmount;
+    await screen.findByText("Saved chats will appear here.");
+    await enterAndSend(user, "An in-flight turn");
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    await user.click(screen.getByRole("button", { name: "Log out" }));
+
+    const newerConversation: Conversation = {
+      id: "new-session-conversation",
+      title: "Created after re-login",
+      createdAt: 200,
+      updatedAt: 200,
+      selectedRouteId: "openai-chat",
+      messages: [
+        {
+          id: "new-session-message",
+          role: "user",
+          content: "A newer session turn",
+          createdAt: 200,
+          delivery: "complete",
+        },
+      ],
+    };
+    saveConversations(TEST_ACCOUNT_ID, [newerConversation]);
+    const newView = renderChat();
+    await screen.findByRole("heading", { name: "Created after re-login" });
+
+    resolveResponse(proxyResponse("Late response from logged-out workspace"));
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    expect(loadConversations(TEST_ACCOUNT_ID)).toEqual([newerConversation]);
+    expect(screen.queryByText("Late response from logged-out workspace")).toBeNull();
+    newView.unmount();
   });
 
   it("opens and closes the mobile conversation navigation", async () => {
