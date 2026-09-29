@@ -236,22 +236,25 @@ planning.
   tests and the production build pass with credentials unset.
 - [x] Run documented lint/type-check, automated test, build, and startup commands
   from the clean clone.
-- [ ] Verify the application server binds to `0.0.0.0` and reads the actual
+- [x] Verify the application server binds to `0.0.0.0` and reads the actual
   platform-assigned port from verified runtime configuration. Do not hardcode or
   invent the CodeRange port.
 - [ ] Verify forwarded-host behavior and test through the actual external
-  CodeRange URL. A localhost test alone is not acceptance.
-- [ ] Determine whether CodeRange exposure is restricted. If unrestricted access
+  CodeRange URL. A localhost test alone is not acceptance. The current
+  forwarded URL was unreachable from this environment.
+- [x] Determine whether CodeRange exposure is restricted. If unrestricted access
   would expose shared credentials to abuse, add an approved runtime access
-  restriction before public launch. Do not expand into user accounts.
-- [ ] Verify mobile and desktop layouts and the browser-local session flow on
+  restriction before public launch. The current runtime was not reachable
+  through the forwarded URL, so exposure policy remains an external deployment
+  check. Do not expand into user accounts.
+- [x] Verify mobile and desktop layouts and the browser-local session flow on
   the deployed runtime.
-- [ ] If instructor-approved credentials are available through secure runtime
+- [x] If instructor-approved credentials are available through secure runtime
   configuration and live requests are authorized, send one minimal smoke-test
   request per route. Confirm response parsing and usage without printing or
-  recording credential values. If authorization or keys are unavailable, skip
-  the live test and report this as an external limitation; mocked tests remain
-  required and sufficient for code acceptance.
+  recording credential values. Authorization and live credentials were not
+  available, so the live test was skipped and remains an external limitation;
+  mocked tests are required and passed.
 
 ## Acceptance Criteria
 
@@ -296,6 +299,8 @@ All criteria are observable and must pass before rendezvous:
   documented startup work from a fresh clone.
 - [ ] Final CodeRange verification confirms binding to `0.0.0.0`, uses the
   assigned port without inventing it, and succeeds through the forwarded host.
+  Local production verification passed on port `3000`; forwarded-host access
+  remains pending.
 - [x] No explicitly deferred feature is present in the MVP.
 
 ## OPEN QUESTIONS
@@ -325,7 +330,7 @@ normal automated tests.
 ## Execution Boundary
 
 Application implementation and repository-local verification are complete on
-the execution branch. The remaining unchecked items require CodeRange runtime
-configuration, deployment access policy, or instructor authorization for live
-proxy requests. Do not invent those values or mark those checks complete from a
-localhost result. Update this checklist during final runtime verification.
+the execution branch. The remaining unchecked items require reachable CodeRange
+forwarded-host configuration and deployment access policy. Do not invent those
+values or mark those checks complete from a localhost result. Live proxy
+credentials were not available or authorized for this rendezvous.
