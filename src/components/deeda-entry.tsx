@@ -165,7 +165,6 @@ export function DeedaEntry({
                 autoComplete="name"
                 id="account-display-name"
                 maxLength={80}
-                name="displayName"
                 onChange={(event) => setDisplayName(event.target.value)}
                 ref={displayNameRef}
                 required
@@ -186,7 +185,6 @@ export function DeedaEntry({
             autoComplete="email"
             id="account-email"
             maxLength={254}
-            name="email"
             onChange={(event) => setEmail(event.target.value)}
             ref={emailRef}
             required
@@ -207,7 +205,6 @@ export function DeedaEntry({
             id="account-password"
             maxLength={256}
             minLength={8}
-            name="password"
             onChange={(event) => setPassword(event.target.value)}
             required
             type="password"
@@ -229,7 +226,6 @@ export function DeedaEntry({
                 id="account-password-confirmation"
                 maxLength={256}
                 minLength={8}
-                name="passwordConfirmation"
                 onChange={(event) => setPasswordConfirmation(event.target.value)}
                 required
                 type="password"

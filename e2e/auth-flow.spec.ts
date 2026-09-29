@@ -27,6 +27,17 @@ test("completes create, chat, logout, failed login, and re-login through the UI"
   page,
   context,
 }) => {
+  const documentNavigations: string[] = [];
+  const clientRuntimeFailures: string[] = [];
+  page.on("framenavigated", (frame) => {
+    if (frame === page.mainFrame()) documentNavigations.push(frame.url());
+  });
+  page.on("pageerror", () => clientRuntimeFailures.push("page error"));
+  page.on("requestfailed", (request) => {
+    if (request.resourceType() === "script") {
+      clientRuntimeFailures.push(`failed script: ${new URL(request.url()).pathname}`);
+    }
+  });
   const requests: Array<{ routeId: string; messages: unknown[] }> = [];
   await page.route("**/api/chat", async (route) => {
     const request = route.request().postDataJSON() as {
@@ -42,11 +53,34 @@ test("completes create, chat, logout, failed login, and re-login through the UI"
   });
 
   await openRegistration(page);
+  documentNavigations.length = 0;
+  const registrationInputNames = await page
+    .getByRole("form", { name: "Create account" })
+    .locator("input")
+    .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).name));
+  expect(registrationInputNames).toEqual(["", "", "", ""]);
   await registerAccount(page, "  owner@example.com ", "correct-horse-1", "Owner");
+  expect(documentNavigations).toEqual([]);
+  expect(new URL(page.url()).search).toBe("");
   await expect(page.getByLabel("Email")).toHaveValue("owner@example.com");
+  const loginInputNames = await page
+    .getByRole("form", { name: "Log in" })
+    .locator("input")
+    .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).name));
+  expect(loginInputNames).toEqual(["", ""]);
+
+  const loginUrl = page.url();
   await login(page, "owner@example.com");
   await expect(page.getByRole("heading", { name: "Your AI workbench" })).toBeVisible();
+  expect(page.url()).toBe(loginUrl);
+  expect(new URL(page.url()).search).toBe("");
+  expect(documentNavigations).toEqual([]);
   await expect(page.locator("#proxy-route option")).toHaveCount(3);
+
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Your AI workbench" })).toBeVisible();
+  expect(new URL(page.url()).search).toBe("");
+  documentNavigations.length = 0;
 
   const otherTab = await context.newPage();
   await otherTab.goto("/");
@@ -82,13 +116,20 @@ test("completes create, chat, logout, failed login, and re-login through the UI"
 
   await page.getByRole("button", { name: "Log out" }).click();
   await expect(page.getByRole("heading", { name: "Welcome to Deeda" })).toBeVisible();
+  expect(new URL(page.url()).search).toBe("");
   await loginForm(page, "owner@example.com", "incorrect-password");
   await page.getByRole("button", { name: "Log in", exact: true }).click();
   await expect(page.getByText("Email or password is incorrect.", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Your AI workbench" })).toHaveCount(0);
+  expect(new URL(page.url()).search).toBe("");
 
+  const reLoginUrl = page.url();
   await login(page, "owner@example.com", "correct-horse-1");
   await expect(page.getByRole("textbox", { name: "Message" })).toBeVisible();
+  expect(page.url()).toBe(reLoginUrl);
+  expect(new URL(page.url()).search).toBe("");
+  expect(documentNavigations).toEqual([]);
+  expect(clientRuntimeFailures).toEqual([]);
   await expect(
     page
       .getByRole("list", { name: "Saved conversations" })

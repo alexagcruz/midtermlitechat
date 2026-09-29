@@ -28,6 +28,10 @@
 
 - Passwords are not stored as plaintext. Account records use Web Crypto,
   PBKDF2-HMAC-SHA-256, a random salt per account, and 600,000 iterations.
+- Keep entry fields controlled by React and do not add HTML `name` attributes.
+  A form's native fallback can otherwise serialize credentials into a GET URL
+  if its submit handler does not run. The React handler must keep calling
+  `preventDefault()`.
 - Do not add password confirmation, password values, proxy credentials, or
   reusable authentication tokens to `localStorage` or `sessionStorage`.
 - The account registry is `deeda.accounts.v1`. The active tab session is
