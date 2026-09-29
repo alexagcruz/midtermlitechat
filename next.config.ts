@@ -1,12 +1,15 @@
 import type { NextConfig } from "next";
-import { getForwardedAssetPrefix } from "./src/lib/runtime/asset-prefix";
+import {
+  getForwardedAssetPrefix,
+  getForwardedDevOrigins,
+} from "./src/lib/runtime/asset-prefix";
+
+const proxyUri = process.env.VSCODE_PROXY_URI;
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  assetPrefix: getForwardedAssetPrefix(
-    process.env.VSCODE_PROXY_URI,
-    process.env.PORT,
-  ),
+  allowedDevOrigins: getForwardedDevOrigins(proxyUri),
+  assetPrefix: getForwardedAssetPrefix(proxyUri, process.env.PORT),
 };
 
 export default nextConfig;

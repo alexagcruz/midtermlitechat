@@ -19,3 +19,15 @@ export function getForwardedAssetPrefix(
     return undefined;
   }
 }
+
+export function getForwardedDevOrigins(
+  proxyUri: string | undefined,
+): string[] | undefined {
+  if (!proxyUri) return undefined;
+
+  try {
+    return [new URL(proxyUri).hostname];
+  } catch {
+    return undefined;
+  }
+}

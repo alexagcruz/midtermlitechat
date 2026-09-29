@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { AUTH_SESSION_STORAGE_KEY } from "@/lib/auth/accounts";
 import { createAndEnter, login, openRegistration, registerAccount } from "./helpers";
 
 function assistantResponse(content: string) {
@@ -129,6 +130,8 @@ test("completes create, chat, logout, failed login, and re-login through the UI"
   expect(page.url()).toBe(reLoginUrl);
   expect(new URL(page.url()).search).toBe("");
   expect(documentNavigations).toEqual([]);
+  expect(page.url()).not.toContain("owner@example.com");
+  expect(page.url()).not.toContain("correct-horse-1");
   expect(clientRuntimeFailures).toEqual([]);
   await expect(
     page
@@ -136,6 +139,62 @@ test("completes create, chat, logout, failed login, and re-login through the UI"
       .locator(".conversation-select")
       .filter({ hasText: "A saved owner conversation" }),
   ).toBeVisible();
+});
+
+test("fresh, missing, malformed, and stale sessions resolve to login", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Welcome to Deeda" })).toBeVisible();
+  expect(await page.evaluate((key) => sessionStorage.getItem(key), AUTH_SESSION_STORAGE_KEY))
+    .toBeNull();
+
+  await page.evaluate((key) => sessionStorage.setItem(key, "not-json"), AUTH_SESSION_STORAGE_KEY);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Welcome to Deeda" })).toBeVisible();
+  expect(await page.evaluate((key) => sessionStorage.getItem(key), AUTH_SESSION_STORAGE_KEY))
+    .toBeNull();
+
+  await page.evaluate(
+    (key) => sessionStorage.setItem(
+      key,
+      JSON.stringify({ version: 1, accountId: "00000000-0000-4000-8000-000000000001" }),
+    ),
+    AUTH_SESSION_STORAGE_KEY,
+  );
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Welcome to Deeda" })).toBeVisible();
+  expect(await page.evaluate((key) => sessionStorage.getItem(key), AUTH_SESSION_STORAGE_KEY))
+    .toBeNull();
+  await expect(page.getByText("Preparing your Deeda workspace...")).toHaveCount(0);
+});
+
+test("loads auth with the forwarded CodeRange origin on development assets", async ({ page }) => {
+  const proxyUri = process.env.VSCODE_PROXY_URI;
+  test.skip(!proxyUri, "requires CodeRange's forwarded URI");
+  if (!proxyUri) return;
+
+  const forwardedOrigin = new URL(proxyUri).origin;
+  const failedAssets: string[] = [];
+  page.on("response", (response) => {
+    const resourceType = response.request().resourceType();
+    if (
+      (resourceType === "script" || resourceType === "stylesheet") &&
+      new URL(response.url()).pathname.includes("/_next/") &&
+      !response.ok()
+    ) {
+      failedAssets.push(`${response.status()} ${new URL(response.url()).pathname}`);
+    }
+  });
+  await page.route("**/_next/**", (route) => {
+    const headers = {
+      ...route.request().headers(),
+      referer: `${forwardedOrigin}/`,
+    };
+    return route.continue({ headers });
+  });
+
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Welcome to Deeda" })).toBeVisible();
+  expect(failedAssets).toEqual([]);
 });
 
 test("migrates legacy chats to one account and keeps a second account isolated", async ({

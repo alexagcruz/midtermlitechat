@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getForwardedAssetPrefix } from "./asset-prefix";
+import {
+  getForwardedAssetPrefix,
+  getForwardedDevOrigins,
+} from "./asset-prefix";
 
 describe("getForwardedAssetPrefix", () => {
   it("uses the forwarded path and assigned port without the proxy origin", () => {
@@ -31,5 +34,18 @@ describe("getForwardedAssetPrefix", () => {
     expect(
       getForwardedAssetPrefix("https://coderange.example/proxy/3000", "3000"),
     ).toBeUndefined();
+  });
+
+  it("allows the forwarded CodeRange hostname for development resources", () => {
+    expect(
+      getForwardedDevOrigins(
+        "https://itent-45-1t-2526-p10.coderange.net/proxy/%7B%7Bport%7D%7D/",
+      ),
+    ).toEqual(["itent-45-1t-2526-p10.coderange.net"]);
+  });
+
+  it("keeps the default development origins for local execution", () => {
+    expect(getForwardedDevOrigins(undefined)).toBeUndefined();
+    expect(getForwardedDevOrigins("not a URL")).toBeUndefined();
   });
 });
