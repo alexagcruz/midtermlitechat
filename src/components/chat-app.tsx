@@ -10,7 +10,13 @@ import type {
   ConversationMessage,
   NormalizedUsage,
 } from "@/lib/chat/types";
-import { loadConversations, saveConversations } from "@/lib/storage/conversations";
+import {
+  loadConversations,
+  mutateAccountConversations,
+} from "@/lib/storage/conversations";
+
+const CONVERSATION_STORAGE_ERROR =
+  "This browser could not save conversation changes. Free browser storage, then reload before continuing.";
 
 function titleFromPrompt(prompt: string): string {
   const title = prompt.replace(/\s+/g, " ").trim();
@@ -103,10 +109,25 @@ function ResponseUsage({ usage }: { usage: NormalizedUsage | null | undefined })
   );
 }
 
-export function ChatApp() {
+export function ChatApp({
+  accountId,
+  displayName,
+  logoutError,
+  migrationWarning,
+  onLogout,
+}: {
+  accountId: string;
+  displayName: string;
+  logoutError: string;
+  migrationWarning: string;
+  onLogout: () => void;
+}) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const conversationsRef = useRef<Conversation[]>([]);
+  const mountedRef = useRef(false);
   const busyRef = useRef(false);
+  const submitLockRef = useRef(false);
+  const persistenceFailedRef = useRef(false);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [draftRouteId, setDraftRouteId] = useState<RouteId>("openai-chat");
   const [input, setInput] = useState("");
@@ -119,8 +140,9 @@ export function ChatApp() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
+    mountedRef.current = true;
     let recoveredPendingMessage = false;
-    const loaded = loadConversations()
+    const loaded = loadConversations(accountId)
       .map((conversation) => ({
         ...conversation,
         messages: conversation.messages.map((message) => {
@@ -134,20 +156,38 @@ export function ChatApp() {
       .sort((left, right) => right.updatedAt - left.updatedAt);
 
     if (recoveredPendingMessage) {
-      try {
-        saveConversations(loaded);
-      } catch {
-        setStorageError(
-          "This browser could not save conversation changes. Free some browser storage and try again.",
-        );
-      }
+      void mutateAccountConversations(accountId, (current) => {
+        if (!mountedRef.current) return null;
+        return current.map((conversation) => ({
+          ...conversation,
+          messages: conversation.messages.map((message) =>
+            message.role === "user" && message.delivery === "pending"
+              ? { ...message, delivery: "failed" as const }
+              : message,
+          ),
+        }));
+      })
+        .then((recovered) => {
+          if (!mountedRef.current) return;
+          conversationsRef.current = recovered;
+          setConversations(recovered);
+        })
+        .catch(() => {
+          if (mountedRef.current) {
+            persistenceFailedRef.current = true;
+            setStorageError(CONVERSATION_STORAGE_ERROR);
+          }
+        });
     }
 
     conversationsRef.current = loaded;
     setConversations(loaded);
     setActiveConversationId(loaded[0]?.id ?? null);
     setHydrated(true);
-  }, []);
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [accountId]);
 
   const activeConversation = conversations.find(
     (conversation) => conversation.id === activeConversationId,
@@ -157,32 +197,62 @@ export function ChatApp() {
     (message) => message.role === "user" && message.delivery === "failed",
   );
 
-  function commitConversations(next: Conversation[]) {
-    const sorted = [...next].sort((left, right) => right.updatedAt - left.updatedAt);
-    conversationsRef.current = sorted;
-    setConversations(sorted);
+  async function commitConversations(
+    mutation: (current: Conversation[]) => Conversation[] | null,
+  ): Promise<boolean> {
+    if (!mountedRef.current) return false;
 
+    if (persistenceFailedRef.current) {
+      const next = mutation(conversationsRef.current);
+      if (next === null) return false;
+      const sorted = [...next].sort((left, right) => right.updatedAt - left.updatedAt);
+      conversationsRef.current = sorted;
+      setConversations(sorted);
+      setStorageError(CONVERSATION_STORAGE_ERROR);
+      return true;
+    }
+
+    let mutationWasApplied = false;
+    let mutationResult: Conversation[] | null = null;
     try {
-      saveConversations(sorted);
+      const updated = await mutateAccountConversations(accountId, (current) => {
+        if (!mountedRef.current) return null;
+        mutationWasApplied = true;
+        mutationResult = mutation(current);
+        return mutationResult;
+      });
+      if (!mountedRef.current) return false;
+      conversationsRef.current = updated;
+      setConversations(updated);
       setStorageError("");
+      return true;
     } catch {
-      setStorageError(
-        "This browser could not save conversation changes. Free some browser storage and try again.",
-      );
+      if (!mountedRef.current) return false;
+      persistenceFailedRef.current = true;
+      const fallback = mutationWasApplied
+        ? mutationResult
+        : mutation(conversationsRef.current);
+      if (fallback !== null) {
+        const sorted = [...fallback].sort((left, right) => right.updatedAt - left.updatedAt);
+        conversationsRef.current = sorted;
+        setConversations(sorted);
+      }
+      setStorageError(CONVERSATION_STORAGE_ERROR);
+      return fallback !== null;
     }
   }
 
-  function updateConversation(
+  async function updateConversation(
     conversationId: string,
     update: (conversation: Conversation) => Conversation,
-  ) {
-    const latest = conversationsRef.current;
-    if (!latest.some((conversation) => conversation.id === conversationId)) return;
-    commitConversations(
-      latest.map((conversation) =>
+  ): Promise<boolean> {
+    if (!mountedRef.current) return false;
+    return commitConversations((current) => {
+      if (!current.some((conversation) => conversation.id === conversationId)) return null;
+      return current.map((conversation) =>
         conversation.id === conversationId ? update(conversation) : conversation,
-      ),
-    );
+      );
+    });
   }
 
   function newConversation() {
@@ -196,7 +266,7 @@ export function ChatApp() {
   function selectRoute(routeId: RouteId) {
     setDraftRouteId(routeId);
     if (activeConversationId) {
-      updateConversation(activeConversationId, (conversation) => ({
+      void updateConversation(activeConversationId, (conversation) => ({
         ...conversation,
         selectedRouteId: routeId,
         updatedAt: Date.now(),
@@ -204,12 +274,12 @@ export function ChatApp() {
     }
   }
 
-  function updateMessageDelivery(
+  async function updateMessageDelivery(
     conversationId: string,
     messageId: string,
     delivery: ConversationMessage["delivery"],
-  ) {
-    updateConversation(conversationId, (conversation) => ({
+  ): Promise<boolean> {
+    return updateConversation(conversationId, (conversation) => ({
       ...conversation,
       updatedAt: Date.now(),
       messages: conversation.messages.map((message) =>
@@ -229,28 +299,36 @@ export function ChatApp() {
     );
     if (!conversation) return;
 
-    const turns = conversationTurns(conversation.messages, messageId);
-    if (turns.length === 0 || turns.at(-1)?.role !== "user") return;
-
     busyRef.current = true;
     setPending(true);
     setRequestErrors((current) => ({ ...current, [messageId]: "" }));
-    updateConversation(conversationId, (current) => ({
-      ...current,
-      selectedRouteId: routeId,
-      updatedAt: Date.now(),
-      messages: current.messages.map((message) =>
-        message.id === messageId ? { ...message, delivery: "pending" } : message,
-      ),
-    }));
 
     try {
+      const savedPendingMessage = await updateConversation(conversationId, (current) => ({
+        ...current,
+        selectedRouteId: routeId,
+        updatedAt: Date.now(),
+        messages: current.messages.map((message) =>
+          message.id === messageId ? { ...message, delivery: "pending" } : message,
+        ),
+      }));
+      if (!savedPendingMessage || !mountedRef.current) return;
+
+      const currentConversation = conversationsRef.current.find(
+        (entry) => entry.id === conversationId,
+      );
+      if (!currentConversation) return;
+      const turns = conversationTurns(currentConversation.messages, messageId);
+      if (turns.length === 0 || turns.at(-1)?.role !== "user") return;
+
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ routeId, messages: turns }),
       });
+      if (!mountedRef.current) return;
       const body: unknown = await response.json().catch(() => null);
+      if (!mountedRef.current) return;
 
       if (!response.ok) {
         const parsedError = chatErrorSchema.safeParse(body);
@@ -279,7 +357,7 @@ export function ChatApp() {
         usage: assistant.usage,
       };
 
-      updateConversation(conversationId, (current) => ({
+      await updateConversation(conversationId, (current) => ({
         ...current,
         updatedAt: Date.now(),
         messages: [
@@ -292,68 +370,89 @@ export function ChatApp() {
         ],
       }));
     } catch (error) {
-      updateMessageDelivery(conversationId, messageId, "failed");
-      setRequestErrors((current) => ({
-        ...current,
-        [messageId]:
-          error instanceof Error
-            ? error.message
-            : "The chat request could not be completed. Try again.",
-      }));
+      if (mountedRef.current) {
+        await updateMessageDelivery(conversationId, messageId, "failed");
+        setRequestErrors((current) => ({
+          ...current,
+          [messageId]:
+            error instanceof Error
+              ? error.message
+              : "The chat request could not be completed. Try again.",
+        }));
+      }
     } finally {
       busyRef.current = false;
-      setPending(false);
+      if (mountedRef.current) setPending(false);
     }
   }
 
   async function submitPrompt(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const content = input.trim();
-    if (!content || pending || busyRef.current || unresolvedFailure || !hydrated) {
+    if (
+      !content ||
+      pending ||
+      busyRef.current ||
+      submitLockRef.current ||
+      unresolvedFailure ||
+      !hydrated
+    ) {
       return;
     }
 
-    const now = Date.now();
-    const routeId = selectedRouteId;
-    const message: ConversationMessage = {
-      id: createMessageId(),
-      role: "user",
-      content,
-      createdAt: now,
-      delivery: "pending",
-      routeId,
-    };
+    submitLockRef.current = true;
+    try {
+      const now = Date.now();
+      const routeId = selectedRouteId;
+      const message: ConversationMessage = {
+        id: createMessageId(),
+        role: "user",
+        content,
+        createdAt: now,
+        delivery: "pending",
+        routeId,
+      };
 
-    const current = conversationsRef.current.find(
-      (conversation) => conversation.id === activeConversationId,
-    );
-    const conversation: Conversation = current
-      ? {
-          ...current,
-          title:
-            current.messages.length === 0 && current.title === "New conversation"
-              ? titleFromPrompt(content)
-              : current.title,
-          updatedAt: now,
-          selectedRouteId: routeId,
-          messages: [...current.messages, message],
-        }
-      : {
-          id: createMessageId(),
-          title: titleFromPrompt(content),
-          createdAt: now,
-          updatedAt: now,
-          selectedRouteId: routeId,
-          messages: [message],
-        };
+      const requestedConversationId = activeConversationId;
+      let conversationId = requestedConversationId ?? createMessageId();
+      const saved = await commitConversations((latest) => {
+        const current = requestedConversationId
+          ? latest.find((conversation) => conversation.id === requestedConversationId)
+          : undefined;
+        if (requestedConversationId && !current) conversationId = createMessageId();
 
-    commitConversations([
-      conversation,
-      ...conversationsRef.current.filter((entry) => entry.id !== conversation.id),
-    ]);
-    setActiveConversationId(conversation.id);
-    setInput("");
-    await sendExistingMessage(conversation.id, message.id, routeId);
+        const conversation: Conversation = current
+          ? {
+              ...current,
+              title:
+                current.messages.length === 0 && current.title === "New conversation"
+                  ? titleFromPrompt(content)
+                  : current.title,
+              updatedAt: now,
+              selectedRouteId: routeId,
+              messages: [...current.messages, message],
+            }
+          : {
+              id: conversationId,
+              title: titleFromPrompt(content),
+              createdAt: now,
+              updatedAt: now,
+              selectedRouteId: routeId,
+              messages: [message],
+            };
+
+        return [
+          conversation,
+          ...latest.filter((entry) => entry.id !== conversation.id),
+        ];
+      });
+      if (!saved || !mountedRef.current) return;
+      setActiveConversationId(conversationId);
+      setInput("");
+      await sendExistingMessage(conversationId, message.id, routeId);
+    } finally {
+      submitLockRef.current = false;
+    }
   }
 
   function retryMessage(conversationId: string, message: ConversationMessage) {
@@ -371,24 +470,25 @@ export function ChatApp() {
     setTitleDraft(conversation.title);
   }
 
-  function saveRename(event: React.FormEvent<HTMLFormElement>, conversationId: string) {
+  async function saveRename(event: React.FormEvent<HTMLFormElement>, conversationId: string) {
     event.preventDefault();
     const title = titleDraft.trim().slice(0, 120);
     if (title) {
-      updateConversation(conversationId, (conversation) => ({
+      await updateConversation(conversationId, (conversation) => ({
         ...conversation,
         title,
         updatedAt: Date.now(),
       }));
     }
-    setEditingConversationId(null);
+    if (mountedRef.current) setEditingConversationId(null);
   }
 
-  function deleteConversation(conversationId: string) {
-    const remaining = conversationsRef.current.filter(
-      (conversation) => conversation.id !== conversationId,
+  async function deleteConversation(conversationId: string) {
+    const saved = await commitConversations((current) =>
+      current.filter((conversation) => conversation.id !== conversationId),
     );
-    commitConversations(remaining);
+    if (!saved || !mountedRef.current) return;
+    const remaining = conversationsRef.current;
     if (activeConversationId === conversationId) {
       setActiveConversationId(remaining[0]?.id ?? null);
     }
@@ -504,6 +604,12 @@ export function ChatApp() {
           )}
         </ul>
 
+        <div className="sidebar-account">
+          <span className="sidebar-account-name" title={displayName}>{displayName}</span>
+          <button className="logout-button" onClick={onLogout} type="button">
+            Log out
+          </button>
+        </div>
         <div className="sidebar-footer">
           <span className="local-mark" aria-hidden="true" />
           <span>Saved in this browser only</span>
@@ -521,9 +627,20 @@ export function ChatApp() {
           </div>
           <div className="header-status">
             <span className="status-dot" aria-hidden="true" />
-            <span className="status-pill">LOCAL DEMO</span>
+            <span className="status-pill">LOCAL ACCOUNT</span>
           </div>
         </div>
+
+        {migrationWarning && (
+          <div className="auth-workspace-note" role="note">
+            {migrationWarning}
+          </div>
+        )}
+        {logoutError && (
+          <div className="inline-alert" role="alert">
+            {logoutError}
+          </div>
+        )}
 
         <div className="route-bar">
           <label htmlFor="proxy-route">Proxy route</label>

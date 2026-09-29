@@ -258,6 +258,50 @@ select:focus-visible {
   line-height: 1.55;
 }
 
+.entry-mode-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: -10px 0 18px;
+  padding: 11px 13px;
+  border: 1px solid #eee8f4;
+  border-radius: 10px;
+  background: #faf8fd;
+  color: #625872;
+  font-size: 12px;
+}
+
+.entry-mode-switch button {
+  min-height: 36px;
+  padding: 6px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #573b7b;
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.entry-message {
+  margin: 0 0 15px;
+  padding: 10px 12px;
+  border: 1px solid #e8c4cd;
+  border-radius: 9px;
+  background: #fff6f7;
+  color: #7c273c;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.entry-message.is-success {
+  border-color: #cbb8e1;
+  background: #f8f3fd;
+  color: #493267;
+}
+
 .entry-card label {
   display: block;
   margin: 17px 0 7px;
@@ -279,6 +323,18 @@ select:focus-visible {
 
 .entry-card input::placeholder {
   color: #8a8095;
+}
+
+.entry-card input[aria-invalid="true"] {
+  border-color: #b84d65;
+}
+
+.entry-field-error {
+  display: block;
+  margin-top: 5px;
+  color: #8a3046;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .entry-login-button,
@@ -742,6 +798,67 @@ select:focus-visible {
   border-top: 1px solid #514464;
   color: #c5b6d9;
   font-size: 11px;
+}
+
+.sidebar-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.sidebar-account-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #eee6f8;
+  font-size: 12px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logout-button {
+  min-height: 40px;
+  padding: 7px 11px;
+  border: 1px solid #776590;
+  border-radius: 8px;
+  background: #382953;
+  color: #f8f3ff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.logout-button:hover {
+  border-color: var(--signal);
+  background: #51406d;
+}
+
+.auth-workspace-note {
+  margin-top: 14px;
+  padding: 10px 13px;
+  border: 1px solid #ddccec;
+  border-radius: 9px;
+  background: #faf6ff;
+  color: #53416b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.auth-loading {
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: #f4f1f9;
+  color: #51435f;
+  font-size: 14px;
+}
+
+.auth-loading p {
+  margin: 0;
 }
 
 .local-mark {
