@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test";
 
+async function enterDeeda(page: import("@playwright/test").Page) {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Welcome to Deeda" })).toBeVisible();
+  await page.getByRole("button", { name: "Log in" }).click();
+  await expect(page.getByRole("heading", { name: "Your AI workbench" })).toBeVisible();
+}
+
 function assistantResponse(content: string, routeId: string) {
   return {
     assistant: {
@@ -21,6 +28,11 @@ test("supports a multi-turn route switch and browser-local session workflow", as
   page,
 }) => {
   const calls: Array<{ routeId: string; messages: unknown[] }> = [];
+  const browserErrors: string[] = [];
+  page.on("pageerror", (error) => browserErrors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") browserErrors.push(message.text());
+  });
 
   await page.route("**/api/chat", async (route) => {
     const request = route.request().postDataJSON() as {
@@ -35,18 +47,43 @@ test("supports a multi-turn route switch and browser-local session workflow", as
     });
   });
 
-  await page.goto("/");
+  await enterDeeda(page);
+  const stylesheetPaths = await page.locator('link[rel="stylesheet"]').evaluateAll((links) =>
+    links.map((link) => new URL((link as HTMLLinkElement).href).pathname),
+  );
+  const scriptPaths = await page.locator('script[src*="_next/"]').evaluateAll((scripts) =>
+    scripts.map((script) => new URL((script as HTMLScriptElement).src).pathname),
+  );
+  expect(stylesheetPaths.length).toBeGreaterThan(0);
+  expect(scriptPaths.length).toBeGreaterThan(0);
+  if (process.env.VSCODE_PROXY_URI) {
+    const prefix = `/proxy/${process.env.PORT || "3000"}/_next/`;
+    expect(stylesheetPaths.some((path) => path.startsWith(prefix))).toBe(true);
+    expect(scriptPaths.every((path) => path.startsWith(prefix))).toBe(true);
+  }
+  expect(
+    await page
+      .locator(".app-shell")
+      .evaluate((element) => getComputedStyle(element).display),
+  ).toBe("grid");
   await expect(
     page.getByRole("heading", { name: "Your AI workbench" }),
   ).toBeVisible();
   await expect(page.locator("#proxy-route option")).toHaveCount(3);
   await expect(page.getByRole("textbox", { name: "Message" })).toBeEnabled();
 
-  await page.getByRole("textbox", { name: "Message" }).fill("First prompt");
+  const composer = page.getByRole("textbox", { name: "Message" });
+  await composer.click();
+  await expect(composer).toBeFocused();
+  await composer.fill("First prompt");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.getByText("Reply 1")).toBeVisible();
 
-  await page.getByLabel("Proxy route").selectOption("anthropic-messages");
+  const routeSelector = page.getByLabel("Proxy route");
+  await routeSelector.click();
+  await routeSelector.press("ArrowDown");
+  await routeSelector.press("Enter");
+  await expect(routeSelector).toHaveValue("anthropic-messages");
   await page.getByRole("textbox", { name: "Message" }).fill("Follow-up prompt");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.getByText("Reply 2")).toBeVisible();
@@ -66,6 +103,7 @@ test("supports a multi-turn route switch and browser-local session workflow", as
   await page.getByRole("textbox", { name: "Conversation name" }).fill("Research notes");
   await page.getByRole("button", { name: "Save conversation name" }).click();
   await page.reload();
+  await page.getByRole("button", { name: "Log in" }).click();
 
   const savedChat = page
     .getByRole("list", { name: "Saved conversations" })
@@ -90,6 +128,7 @@ test("supports a multi-turn route switch and browser-local session workflow", as
 
   await page.setViewportSize({ width: 375, height: 812 });
   await page.reload();
+  await page.getByRole("button", { name: "Log in" }).click();
   await expect(page.getByRole("textbox", { name: "Message" })).toBeVisible();
   const dimensions = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
@@ -106,11 +145,31 @@ test("supports a multi-turn route switch and browser-local session workflow", as
     "aria-expanded",
     "true",
   );
-  await page.getByRole("button", { name: "Close conversations" }).click();
+  await page
+    .getByRole("list", { name: "Saved conversations" })
+    .locator(".conversation-select")
+    .filter({ hasText: "Research notes" })
+    .click();
   await expect(page.getByRole("button", { name: "Open conversations" })).toHaveAttribute(
     "aria-expanded",
     "false",
   );
+  await expect(page.getByText("First prompt", { exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Open conversations" }).click();
+  await page.getByRole("button", { name: "Delete Research notes" }).click();
+  await expect(page.getByRole("button", { name: /Research notes/ })).toHaveCount(0);
+  await page.getByRole("button", { name: /new conversation/i }).click();
+  await expect(page.getByRole("heading", { name: "Your AI workbench" })).toBeVisible();
+
+  await expect(page.getByRole("button", { name: "Open conversations" })).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
+  const mobileComposer = page.getByRole("textbox", { name: "Message" });
+  await mobileComposer.click();
+  await expect(mobileComposer).toBeFocused();
+  expect(browserErrors).toEqual([]);
 });
 
 test("preserves a failed prompt and retries it without another external request", async ({
@@ -137,7 +196,7 @@ test("preserves a failed prompt and retries it without another external request"
     });
   });
 
-  await page.goto("/");
+  await enterDeeda(page);
   await expect(page.getByRole("textbox", { name: "Message" })).toBeEnabled();
   await page.getByRole("textbox", { name: "Message" }).fill("Keep this prompt");
   await page.getByRole("button", { name: "Send message" }).click();
@@ -149,4 +208,35 @@ test("preserves a failed prompt and retries it without another external request"
   await expect(page.getByText("Retry succeeded")).toBeVisible();
   await expect(page.getByTestId("message-user")).toHaveCount(1);
   expect(attempts).toBe(2);
+});
+
+test("offers a credential-free Deeda entry without persisting the password", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Welcome to Deeda" })).toBeVisible();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
+  const usernameField = page.getByLabel("Username or email");
+  await expect(usernameField).toBeFocused();
+  await page.keyboard.press("Tab");
+  const passwordField = page.getByLabel("Password");
+  await expect(passwordField).toBeFocused();
+  expect(await passwordField.evaluate((element) => getComputedStyle(element).outlineWidth)).not.toBe("0px");
+  await usernameField.fill("demo@example.com");
+  await passwordField.fill("temporary-demo-password");
+  await expect(page.getByRole("button", { name: /continue with google/i })).toBeDisabled();
+  await expect(page.getByText("Google sign-in is not connected in this demo.")).toBeVisible();
+  const dimensions = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    content: document.documentElement.scrollWidth,
+  }));
+  expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport);
+  await page.getByRole("button", { name: "Log in" }).click();
+  await expect(page.getByRole("heading", { name: "Your AI workbench" })).toBeVisible();
+  await expect(page.getByLabel("Password")).toHaveCount(0);
+  expect(
+    await page.evaluate(() => localStorage.getItem("litechat.conversations.v1")),
+  ).toBeNull();
 });

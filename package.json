@@ -1,12 +1,12 @@
 {
-  "name": "litechat-midterm",
+  "name": "deeda-midterm",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0",
+    "dev": "PORT=${PORT:-3000} next dev --hostname 0.0.0.0 --port ${PORT:-3000}",
     "build": "next build",
-    "start": "next start --hostname 0.0.0.0",
+    "start": "PORT=${PORT:-3000} next start --hostname 0.0.0.0 --port ${PORT:-3000}",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",

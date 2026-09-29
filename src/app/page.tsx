@@ -1,5 +1,5 @@
-import { ChatApp } from "@/components/chat-app";
+import { DeedaApp } from "@/components/deeda-app";
 
 export default function HomePage() {
-  return <ChatApp />;
+  return <DeedaApp />;
 }

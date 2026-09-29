@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LiteChat | Model access, made simple",
+  title: "Deeda | Make room for your next good idea",
   description:
-    "A text-first chat prototype for selecting LiteChat proxy routes and reviewing token usage.",
+    "A thoughtful AI chat workspace for questions, conversations, and visible token usage.",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#172225",
+  themeColor: "#34205f",
 };
 
 export default function RootLayout({
