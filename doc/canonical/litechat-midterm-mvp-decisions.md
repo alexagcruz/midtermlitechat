@@ -1,17 +1,18 @@
-# LiteChat Midterm MVP Decisions
+# Deeda Midterm MVP Decisions
 
 - Status: Human-approved product and technical decisions.
 - Approved: 2026-09-29.
 - Source: User approval after review of
   `doc/study/1790657427_litechat_midterm_feasibility.md`.
-- Scope: This document is authoritative for planning the initial ITENT 45
-  midterm MVP. It does not authorize application implementation.
+- Scope: This document records human-approved product and technical decisions
+  for the ITENT 45 midterm MVP and its approved Deeda presentation update.
 
 ## Product Goal
 
-Build a text-first, usage-metered prototype that presents selectable LiteChat
-proxy routes in one chat interface. A user can have a multi-turn conversation,
-save and manage conversations in the current browser.
+Build Deeda, a text-first, usage-metered prototype that presents the three
+selectable LiteChat proxy interfaces in one chat interface. A user can have a
+multi-turn conversation and save and manage conversations in the current
+browser.
 
 This is a prototype for token usage visibility. It is not a payment, pricing, or
 monetary billing system.
@@ -81,9 +82,13 @@ pricing or billing information.
 
 ## Authentication and Runtime Access
 
-Do not implement user registration, username/password authentication, or Google
-OAuth for the initial MVP. Treat it as a restricted, single-user,
-single-browser demonstration.
+Do not implement user registration, real username/password authentication, or
+Google OAuth. Deeda may show a local demo entry screen with username/email and
+password fields. The `Log in` action accepts blank input and only opens the
+existing workbench. Do not validate, transmit, or persist the entered password.
+Disable the Google action and clearly state that Google sign-in is not connected.
+This entry screen is not authentication or an access-control boundary. Treat
+Deeda as a restricted, single-user, single-browser demonstration.
 
 If CodeRange deployment exposure makes unrestricted use of the shared proxy
 credentials unsafe, add an appropriate runtime access restriction. Treat this
@@ -147,7 +152,7 @@ Do not include these features in the initial MVP:
 | Web search | No LiteChat search service is documented, and hosted search is unavailable on the documented OpenAI Responses interface. |
 | Streaming | The protocols use different stream formats and completion/usage events. Full responses reduce integration risk in the first implementation. |
 | Payments or dollar-cost estimates | No approved prices, billing endpoint, or payment rules are available. Token counts are the approved metering scope. |
-| Google login or any user accounts | The approved deployment is a restricted single-user/single-browser demo. Accounts are not required for that journey. |
+| Google login or any user accounts | The approved deployment is a restricted single-user/single-browser demo. The local disconnected entry is presentation only; accounts are not required for that journey. |
 | Server-side conversation persistence or cross-device synchronization | `localStorage` meets the approved single-browser requirement without adding a database or account ownership model. |
 | Advanced session management | Create, list, reopen, rename, and delete cover the approved session needs. Folders, sharing, and collaboration do not. |
 | Model comparisons | Selecting one route per turn demonstrates user choice without parallel requests or comparison workflows. |
@@ -176,9 +181,24 @@ logs, test output, screenshots, or command history.
 
 The application must bind to `0.0.0.0` and work through CodeRange. The exact
 port, runtime version, and forwarded-host behavior are not established. Verify
-these as runtime/deployment configuration before final launch. Do not invent
-values. These unknowns are not product-design blockers and do not prevent
-planning the approved MVP.
+these as runtime/deployment configuration before final launch. Preserve an
+assigned `PORT`; when it is absent, the approved runtime default is `3000`, which
+must match the CodeRange asset prefix. Do not invent another assigned value.
+These unknowns are not product-design blockers and do not prevent planning the
+approved MVP.
+
+## Approved Deeda Presentation Update
+
+- User-facing product name: **Deeda**. Keep the external LiteChat proxy name,
+  technical routes, credential variable names, API contracts, and localStorage
+  key unchanged.
+- Use the restrained purple/lavender Deeda identity and system fonts. Do not add
+  external font or image assets.
+- Provide a polished but local-only demo entry experience. It does not add an
+  authentication service, account database, OAuth flow, cookies, or persistent
+  login state.
+- Keep existing local conversations under `litechat.conversations.v1` so this
+  presentation change does not discard browser data.
 
 ## Remaining Uncertainties
 

@@ -420,13 +420,13 @@ export function ChatApp() {
         className={`sidebar${mobileNavOpen ? " is-open" : ""}`}
         id="conversation-sidebar"
       >
-        <Link className="brand" href="/" aria-label="LiteChat home">
+        <Link className="brand" href="/" aria-label="Deeda home">
           <span className="brand-mark" aria-hidden="true">
-            L
+            d
           </span>
-          <span>litechat</span>
+          <span>Deeda</span>
         </Link>
-        <p className="sidebar-kicker">MODEL ACCESS, MADE SIMPLE</p>
+        <p className="sidebar-kicker">A THOUGHTFUL AI WORKSPACE</p>
 
         <button className="new-chat-button" onClick={newConversation} type="button">
           <span aria-hidden="true">+</span> New conversation
@@ -513,15 +513,15 @@ export function ChatApp() {
       <section className="chat-panel" aria-label="Chat">
         <div className="chat-header">
           <div>
-            <p className="eyebrow">TEXT CHAT / TOKEN METERED</p>
+            <p className="eyebrow">YOUR DEEDA WORKSPACE</p>
             <h1>{activeConversation?.title ?? "Your AI workbench"}</h1>
             <p className="header-caption">
-              Choose a proxy route, ask a question, and keep your usage visible.
+              Ask a question, choose how Deeda responds, and keep your usage in view.
             </p>
           </div>
           <div className="header-status">
             <span className="status-dot" aria-hidden="true" />
-            <span className="status-pill">PROTOTYPE</span>
+            <span className="status-pill">LOCAL DEMO</span>
           </div>
         </div>
 
@@ -574,7 +574,7 @@ export function ChatApp() {
                   key={message.id}
                 >
                   <div className="message-meta">
-                    <span>{message.role === "user" ? "YOU" : "LITECHAT"}</span>
+                    <span>{message.role === "user" ? "YOU" : "DEEDA"}</span>
                     {message.role === "assistant" && message.routeId && (
                       <span>{routeLabel(message.routeId)}</span>
                     )}
