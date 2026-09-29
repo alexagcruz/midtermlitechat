@@ -389,4 +389,27 @@ describe("ChatApp", () => {
       { role: "user", content: "This request was interrupted" },
     ]);
   });
+
+  it("opens and closes the mobile conversation navigation", async () => {
+    const user = userEvent.setup();
+    renderChat();
+
+    await screen.findByText("Saved chats will appear here.");
+    const openButton = screen.getByRole("button", { name: "Open conversations" });
+    expect(openButton).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(openButton);
+    expect(
+      screen.getByRole("button", { name: "Close conversations" }),
+    ).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("complementary", { name: "Conversation navigation" })).toHaveClass(
+      "sidebar",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Close conversations" }));
+    expect(screen.getByRole("button", { name: "Open conversations" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+  });
 });

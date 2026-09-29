@@ -89,12 +89,28 @@ test("supports a multi-turn route switch and browser-local session workflow", as
   ).toBeVisible();
 
   await page.setViewportSize({ width: 375, height: 812 });
+  await page.reload();
   await expect(page.getByRole("textbox", { name: "Message" })).toBeVisible();
   const dimensions = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
     content: document.documentElement.scrollWidth,
   }));
   expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport);
+
+  const openNavigation = page.locator(".mobile-nav-toggle");
+  await expect(openNavigation).toBeVisible();
+  await expect(openNavigation).toHaveAttribute("aria-label", "Open conversations");
+  await expect(openNavigation).toHaveAttribute("aria-expanded", "false");
+  await openNavigation.click();
+  await expect(page.getByRole("button", { name: "Close conversations" })).toHaveAttribute(
+    "aria-expanded",
+    "true",
+  );
+  await page.getByRole("button", { name: "Close conversations" }).click();
+  await expect(page.getByRole("button", { name: "Open conversations" })).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
 });
 
 test("preserves a failed prompt and retries it without another external request", async ({

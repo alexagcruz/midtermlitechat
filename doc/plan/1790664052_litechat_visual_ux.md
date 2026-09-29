@@ -1,8 +1,7 @@
 # LiteChat Visual UX Improvement Plan
 
 - Plan timestamp: `1790664052`.
-- Status: Approved visual study and human decisions recorded; implementation not
-  started.
+- Status: EXECUTE PLAN in progress on `feat/litechat-visual-ux`.
 - Basis:
   - `doc/study/1790663792_litechat-visual-ux-study.md`
   - `doc/canonical/litechat-midterm-mvp-decisions.md`
@@ -58,97 +57,97 @@ implemented and verified.
 
 ### 1. Baseline and Asset Delivery
 
-- [ ] Check Git status and create a feature branch from the approved `main`.
-- [ ] Record the current baseline test results before changing the frontend.
-- [ ] Start the existing production server on the verified local runtime and
+- [x] Check Git status and create a feature branch from the approved `main`.
+- [x] Record the current baseline test results before changing the frontend.
+- [x] Start the existing production server on the verified local runtime and
   confirm the generated CSS asset returns HTTP 200 with a CSS content type.
 - [ ] Through the accessible CodeRange browser URL, inspect the document and
   `/_next/static/...css` requests, browser console, and computed `.app-shell`
   display. If the asset fails, stop styling work and resolve delivery first.
-- [ ] Confirm that no external fonts, images, or UI-framework dependencies are
+- [x] Confirm that no external fonts, images, or UI-framework dependencies are
   required. Keep all design assets in existing CSS and markup.
 
 ### 2. Visual System
 
-- [ ] Refine `src/app/globals.css` custom properties for the deep-green sidebar,
+- [x] Refine `src/app/globals.css` custom properties for the deep-green sidebar,
   warm application background, workspace surface, message surfaces, pale-green
   accent, error accent, muted text, spacing scale, radii, and control heights.
-- [ ] Replace overly small or low-contrast essential metadata with readable UI
+- [x] Replace overly small or low-contrast essential metadata with readable UI
   text. Keep compact labels only for secondary context.
-- [ ] Use system-font stacks only. Do not add remote fonts, font files, image
+- [x] Use system-font stacks only. Do not add remote fonts, font files, image
   assets, or new UI libraries.
-- [ ] Define consistent hover, focus-visible, selected, disabled, pending, and
+- [x] Define consistent hover, focus-visible, selected, disabled, pending, and
   error states. Keep contrast sufficient on light and dark surfaces.
-- [ ] Keep the visual language restrained. Do not add gradients, decorative
+- [x] Keep the visual language restrained. Do not add gradients, decorative
   illustrations, product claims, or features outside the approved MVP.
 
 ### 3. Desktop Application Shell
 
-- [ ] Refine the shell into a stable sidebar and flexible main workspace.
-- [ ] Keep branding, product descriptor, `New conversation`, saved conversations,
+- [x] Refine the shell into a stable sidebar and flexible main workspace.
+- [x] Keep branding, product descriptor, `New conversation`, saved conversations,
   and browser-local persistence hint in the sidebar.
-- [ ] Make the selected conversation state obvious without depending on hover.
-- [ ] Keep rename and delete actions keyboard accessible and visible on focus.
-- [ ] Give the main header clear title hierarchy, route context, and prototype
+- [x] Make the selected conversation state obvious without depending on hover.
+- [x] Keep rename and delete actions keyboard accessible and visible on focus.
+- [x] Give the main header clear title hierarchy, route context, and prototype
   status without duplicating or changing existing accessible names unnecessarily.
-- [ ] Give the route selector a clear visual grouping near the conversation
+- [x] Give the route selector a clear visual grouping near the conversation
   header. Keep it a native accessible `select` unless a custom control can be
   implemented without reducing keyboard or screen-reader behavior.
-- [ ] Keep the proxy/model disclosure visible but visually secondary.
-- [ ] Improve the empty state with useful hierarchy and a clear first action
+- [x] Keep the proxy/model disclosure visible but visually secondary.
+- [x] Improve the empty state with useful hierarchy and a clear first action
   without adding sample prompts that trigger external requests.
-- [ ] Keep the message region at a readable max width. Distinguish user and
+- [x] Keep the message region at a readable max width. Distinguish user and
   assistant messages through alignment, surface, label, and spacing.
-- [ ] Keep usage below responses and conversation totals near the composer as
+- [x] Keep usage below responses and conversation totals near the composer as
   secondary information.
-- [ ] Make the composer the clear primary interaction with a comfortable text
+- [x] Make the composer the clear primary interaction with a comfortable text
   area, clear send action, pending state, and no-billing disclosure.
 
 ### 4. Mobile Navigation and Layout
 
-- [ ] At the mobile breakpoint, collapse the desktop sidebar into a compact
+- [x] At the mobile breakpoint, collapse the desktop sidebar into a compact
   navigation/drawer control. Do not keep a fixed-width sidebar above the chat.
-- [ ] Provide an accessible button with an explicit label to open and close the
+- [x] Provide an accessible button with an explicit label to open and close the
   conversation drawer. Include an appropriate expanded state.
-- [ ] Let users start a new conversation, select a saved conversation, rename,
+- [x] Let users start a new conversation, select a saved conversation, rename,
   and delete from the mobile navigation without horizontal overflow.
-- [ ] Close the drawer after selecting a conversation or starting a new one when
+- [x] Close the drawer after selecting a conversation or starting a new one when
   that behavior is appropriate for the current interaction.
-- [ ] Keep the route selector full-width or comfortably sized below the header.
-- [ ] Keep message bubbles and the composer within the viewport. Use at least
+- [x] Keep the route selector full-width or comfortably sized below the header.
+- [x] Keep message bubbles and the composer within the viewport. Use at least
   approximately 44px touch targets for primary controls.
-- [ ] Ensure essential controls do not rely on hover. Verify keyboard focus and
+- [x] Ensure essential controls do not rely on hover. Verify keyboard focus and
   touch interaction.
 
 ### 5. Accessibility and Semantics
 
-- [ ] Preserve one logical `h1` for the active workspace and valid heading order.
-- [ ] Preserve navigation, main, and message-log landmarks.
-- [ ] Preserve accessible labels for route selection, message input, new chat,
+- [x] Preserve one logical `h1` for the active workspace and valid heading order.
+- [x] Preserve navigation, main, and message-log landmarks.
+- [x] Preserve accessible labels for route selection, message input, new chat,
   rename, delete, retry, and conversation selection.
-- [ ] Preserve or improve `aria-current` for the selected conversation and add
+- [x] Preserve or improve `aria-current` for the selected conversation and add
   `aria-expanded`/`aria-controls` for the mobile drawer.
-- [ ] Keep focus-visible outlines with sufficient contrast on every interactive
+- [x] Keep focus-visible outlines with sufficient contrast on every interactive
   surface.
-- [ ] Ensure loading and error states are understandable without color alone.
-- [ ] Avoid essential information in tiny all-caps text.
-- [ ] Check text and control contrast with an accessibility contrast tool during
+- [x] Ensure loading and error states are understandable without color alone.
+- [x] Avoid essential information in tiny all-caps text.
+- [x] Check text and control contrast with an accessibility contrast tool during
   implementation. Do not assert exact color values in automated tests.
 
 ### 6. Regression and UX Testing
 
-- [ ] Keep adapter, route-handler, validation, storage, and proxy security tests
+- [x] Keep adapter, route-handler, validation, storage, and proxy security tests
   unchanged unless a semantic interface change requires a narrow test update.
-- [ ] Run existing UI tests after markup changes. Preserve coverage for prompt
+- [x] Run existing UI tests after markup changes. Preserve coverage for prompt
   sending, multi-turn context, route switching, usage, loading, failure, retry,
   rename, delete, storage reload, and interrupted request recovery.
-- [ ] Add focused UI tests for opening/closing mobile navigation, selecting a
+- [x] Add focused UI tests for opening/closing mobile navigation, selecting a
   saved conversation from the drawer, and preserving accessible selected state.
-- [ ] Add or update Playwright checks for narrow viewport no-overflow behavior,
+- [x] Add or update Playwright checks for narrow viewport no-overflow behavior,
   visible composer, route selector access, and mobile drawer interaction.
-- [ ] Do not test exact colors, pixel coordinates, shadow values, font pixels,
+- [x] Do not test exact colors, pixel coordinates, shadow values, font pixels,
   or CSS class names. Use roles, labels, visible states, and layout constraints.
-- [ ] Run the complete normal suite without real credentials:
+- [x] Run the complete normal suite without real credentials:
   `npm test`, `npm run test:e2e`, `npm run typecheck`, and `npm run lint`.
 
 ### 7. Documentation and Reproducibility
@@ -157,9 +156,9 @@ implemented and verified.
   especially mobile navigation and any changed user-facing interaction.
 - [ ] Update `doc/wiki/footguns/` if the drawer, responsive layout, or asset
   delivery introduces a noteworthy operational behavior.
-- [ ] Keep README setup and runtime commands accurate. Do not add secret values.
-- [ ] Confirm no external font, image, or UI framework dependency was added.
-- [ ] Verify `.gitignore`, package manifest, and lockfile remain unchanged except
+- [x] Keep README setup and runtime commands accurate. Do not add secret values.
+- [x] Confirm no external font, image, or UI framework dependency was added.
+- [x] Verify `.gitignore`, package manifest, and lockfile remain unchanged except
   for intentionally approved dependency changes. Do not alter credentials or
   environment handling.
 - [ ] Run `npm ci`, `npm run build`, and the documented startup command from a

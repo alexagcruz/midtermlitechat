@@ -116,6 +116,7 @@ export function ChatApp() {
   const [requestErrors, setRequestErrors] = useState<Record<string, string>>({});
   const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
   const [titleDraft, setTitleDraft] = useState("");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     let recoveredPendingMessage = false;
@@ -189,6 +190,7 @@ export function ChatApp() {
     setDraftRouteId(selectedRouteId);
     setInput("");
     setRequestErrors({});
+    setMobileNavOpen(false);
   }
 
   function selectRoute(routeId: RouteId) {
@@ -395,7 +397,29 @@ export function ChatApp() {
 
   return (
     <main className="app-shell">
-      <aside className="sidebar" aria-label="Conversation navigation">
+      <button
+        aria-controls="conversation-sidebar"
+        aria-expanded={mobileNavOpen}
+        aria-label={mobileNavOpen ? "Close conversations" : "Open conversations"}
+        className="mobile-nav-toggle"
+        onClick={() => setMobileNavOpen((open) => !open)}
+        type="button"
+      >
+        <span className="mobile-nav-icon" aria-hidden="true">
+          {mobileNavOpen ? "×" : "☰"}
+        </span>
+        <span>{mobileNavOpen ? "Close" : "Chats"}</span>
+      </button>
+      <div
+        aria-hidden={!mobileNavOpen}
+        className={`mobile-nav-backdrop${mobileNavOpen ? " is-visible" : ""}`}
+        onClick={() => setMobileNavOpen(false)}
+      />
+      <aside
+        aria-label="Conversation navigation"
+        className={`sidebar${mobileNavOpen ? " is-open" : ""}`}
+        id="conversation-sidebar"
+      >
         <Link className="brand" href="/" aria-label="LiteChat home">
           <span className="brand-mark" aria-hidden="true">
             L
@@ -446,6 +470,7 @@ export function ChatApp() {
                     onClick={() => {
                       setActiveConversationId(conversation.id);
                       setRequestErrors({});
+                      setMobileNavOpen(false);
                     }}
                     type="button"
                   >
@@ -490,8 +515,14 @@ export function ChatApp() {
           <div>
             <p className="eyebrow">TEXT CHAT / TOKEN METERED</p>
             <h1>{activeConversation?.title ?? "Your AI workbench"}</h1>
+            <p className="header-caption">
+              Choose a proxy route, ask a question, and keep your usage visible.
+            </p>
           </div>
-          <span className="status-pill">PROTOTYPE</span>
+          <div className="header-status">
+            <span className="status-dot" aria-hidden="true" />
+            <span className="status-pill">PROTOTYPE</span>
+          </div>
         </div>
 
         <div className="route-bar">
@@ -508,7 +539,7 @@ export function ChatApp() {
               </option>
             ))}
           </select>
-          <span className="route-note">Selection applies to the next turn.</span>
+          <span className="route-note">Applies to the next turn</span>
         </div>
 
         <div className="proxy-disclosure" role="note">
@@ -590,11 +621,16 @@ export function ChatApp() {
             </div>
           ) : (
             <div className="empty-state">
-              <span className="empty-index">01 / START HERE</span>
-              <h2>One conversation. Three proxy routes.</h2>
+              <span className="empty-index">START A NEW THREAD</span>
+              <div className="empty-signal" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+              <h2>One workspace for every question.</h2>
               <p>
                 Ask a question, choose a route, and keep the conversation in this
-                browser.
+                browser. Your first prompt becomes the thread title.
               </p>
             </div>
           )}
